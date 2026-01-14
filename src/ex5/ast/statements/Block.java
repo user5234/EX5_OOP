@@ -8,4 +8,13 @@ public class Block extends Statement {
 	public Block(List<Statement> statements) {
 		this.statements = statements;
 	}
+
+	@Override
+	public String print() {
+		var sb = new StringBuilder();
+		for (Statement statement : statements) {
+			sb.append(statement.print()).append("\n");
+		}
+		return sb.toString();
+	}
 }

@@ -4,11 +4,24 @@ import ex5.ast.expressions.Expression;
 
 public class WhileStatement extends Statement {
 
-	public final Expression condition;
-	public final Statement body;
+	private final Expression condition;
+	private final Block body;
 
-	public WhileStatement(Expression condition, Statement body) {
+	public WhileStatement(Expression condition, Block body) {
 		this.condition = condition;
 		this.body = body;
+	}
+
+	public Expression getCondition() {
+		return condition;
+	}
+
+	public Block getBody() {
+		return body;
+	}
+
+	@Override
+	public String print() {
+		return "while\n" + "\tcondition: " + condition.print() + "\n" + "\tbody: " + body.print();
 	}
 }

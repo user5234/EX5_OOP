@@ -5,13 +5,34 @@ import ex5.ast.expressions.Expression;
 
 public class VariableDeclaration extends Statement {
 
-	public final TokenType type;
-	public final String name;
-	public final Expression initializer;
+	private final TokenType type;
+	private final String identifier;
+	private final Expression initializer;
 
-	public VariableDeclaration(TokenType type, String name, Expression initializer) {
+	public VariableDeclaration(TokenType type, String identifier, Expression initializer) {
 		this.type = type;
-		this.name = name;
+		this.identifier = identifier;
 		this.initializer = initializer;
+	}
+
+	public  TokenType getType() {
+		return type;
+	}
+	public String getIdentifier() {
+		return identifier;
+	}
+
+	public Expression getInitializer() {
+		return initializer;
+	}
+
+	@Override
+	public String print() {
+		if (initializer != null) {
+			return type + " " + identifier + " = " + initializer.print();
+		}
+		else {
+			return type + " " + identifier;
+		}
 	}
 }

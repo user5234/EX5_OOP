@@ -30,11 +30,12 @@ public class Parser {
 			case WHILE -> parseWhile();
 			case RETURN -> parseReturn();
 			case INT, DOUBLE, STRING, BOOLEAN, CHAR -> parseVariableDeclaration();
+			case VOID -> parseMethodDeclaration();
 			default -> parseVariableAssignment();
 		};
 	}
 
-	private Statement parseIf() throws UnexpectedTokenException {
+	private IfStatement parseIf() throws UnexpectedTokenException {
 		ts.expect(TokenType.IF);
 		ts.expect(TokenType.LPAREN);
 
@@ -47,7 +48,7 @@ public class Parser {
 		return new IfStatement(condition, thenBranch);
 	}
 
-	private Statement parseWhile() throws UnexpectedTokenException {
+	private WhileStatement parseWhile() throws UnexpectedTokenException {
 		ts.expect(TokenType.WHILE);
 		ts.expect(TokenType.LPAREN);
 
@@ -60,14 +61,14 @@ public class Parser {
 		return new WhileStatement(condition, body);
 	}
 
-	private Statement parseReturn() throws UnexpectedTokenException {
+	private ReturnStatement parseReturn() throws UnexpectedTokenException {
 		ts.expect(TokenType.RETURN);
-		ts.expect(TokenType.LPAREN);
+		ts.expect(TokenType.SEMICOLON);
 
 		return new ReturnStatement();
 	}
 
-	private Statement parseVariableDeclaration() throws UnexpectedTokenException {
+	private VariableDeclaration parseVariableDeclaration() throws UnexpectedTokenException {
 		var type = ts.consume().getType();
 		var name = ts.expect(TokenType.IDENTIFIER);
 
@@ -79,7 +80,17 @@ public class Parser {
 		return new VariableDeclaration(type, name.getValue(), value);
 	}
 
-	private Statement parseVariableAssignment() throws UnexpectedTokenException {
+	private MethodDeclaration parseMethodDeclaration() throws UnexpectedTokenException {
+		ts.expect(TokenType.VOID);
+		var name = ts.expect(TokenType.IDENTIFIER);
+
+		var arguments = parseMethodArguments();
+		var body = parseBlock();
+
+		return new MethodDeclaration(name.getValue(), arguments, body);
+	}
+
+	private VariableAssignment parseVariableAssignment() throws UnexpectedTokenException {
 		var name = ts.expect(TokenType.IDENTIFIER);
 		ts.expect(TokenType.ASSIGN);
 
@@ -89,7 +100,7 @@ public class Parser {
 		return new VariableAssignment(name.getValue(), value);
 	}
 
-	private Statement parseBlock() throws UnexpectedTokenException {
+	private Block parseBlock() throws UnexpectedTokenException {
 		ts.expect(TokenType.LBRACE);
 
 		var statements = new ArrayList<Statement>();
@@ -111,6 +122,29 @@ public class Parser {
 
 			default -> throw new UnexpectedTokenException("Invalid expression: " + t);
 		};
+	}
+
+	private List<MethodArgument> parseMethodArguments() throws UnexpectedTokenException {
+		var arguments = new ArrayList<MethodArgument>();
+
+		ts.expect(TokenType.LPAREN);
+
+		while (ts.peek().getType() != TokenType.RPAREN) {
+			var type = ts.consume().getType();
+
+			switch (type) {
+				case INT, DOUBLE, STRING, BOOLEAN, CHAR -> {}
+				default -> throw new UnexpectedTokenException("Invalid argument type: " + type);
+			}
+
+			var name = ts.expect(TokenType.IDENTIFIER);
+
+			arguments.add(new MethodArgument(type, name.getValue()));
+		}
+
+		ts.expect(TokenType.RPAREN);
+
+		return arguments;
 	}
 }
 
