@@ -28,8 +28,8 @@ public class VariableDeclaration extends Statement {
 	}
 
 	@Override
-	public <R> R accept(ASTVisitor<R> visitor) {
-		return visitor.visitVariableDeclaration(this);
+	public <R> void accept(ASTVisitor<R> visitor) {
+		visitor.visitVariableDeclaration(this);
 	}
 
 	@Override

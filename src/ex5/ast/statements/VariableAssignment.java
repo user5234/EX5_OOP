@@ -22,8 +22,8 @@ public class VariableAssignment extends Statement {
 	}
 
 	@Override
-	public <R> R accept(ASTVisitor<R> visitor) {
-		return visitor.visitVariableAssignment(this);
+	public <R> void accept(ASTVisitor<R> visitor) {
+		visitor.visitVariableAssignment(this);
 	}
 
 	@Override

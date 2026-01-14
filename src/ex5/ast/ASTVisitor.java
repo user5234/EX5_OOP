@@ -8,14 +8,14 @@ import ex5.ast.statements.*;
 public interface ASTVisitor<R> {
 
 	// Statements
-	R visitBlock(Block bl);
-	R visitIfStatement(IfStatement is);
-	R visitMethodArgument(MethodArgument ma);
-	R visitMethodDeclaration(MethodDeclaration md);
-	R visitReturnStatement(ReturnStatement rs);
-	R visitVariableAssignment(VariableAssignment va);
-	R visitVariableDeclaration(VariableDeclaration vd);
-	R visitWhileStatement(WhileStatement ws);
+	void visitBlock(Block bl);
+	void visitIfStatement(IfStatement is);
+	void visitMethodArgument(MethodArgument ma);
+	void visitMethodDeclaration(MethodDeclaration md);
+	void visitReturnStatement(ReturnStatement rs);
+	void visitVariableAssignment(VariableAssignment va);
+	void visitVariableDeclaration(VariableDeclaration vd);
+	void visitWhileStatement(WhileStatement ws);
 
 	// Expressions
 	R visitLiteralExpression(LiteralExpression le);

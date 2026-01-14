@@ -22,8 +22,8 @@ public class MethodArgument extends Statement {
 	}
 
 	@Override
-	public <R> R accept(ASTVisitor<R> visitor) {
-		return visitor.visitMethodArgument(this);
+	public <R> void accept(ASTVisitor<R> visitor) {
+		visitor.visitMethodArgument(this);
 	}
 
 	@Override

@@ -42,7 +42,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	// ───────── STATEMENTS ─────────
 
 	@Override
-	public TokenType visitVariableDeclaration(VariableDeclaration vs) {
+	public void visitVariableDeclaration(VariableDeclaration vs) {
 		var type = vs.getInitializer().accept(this);
 
 		if (type != vs.getType()) {
@@ -53,12 +53,10 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 		}
 
 		currentScope.define(new Symbol(vs.getIdentifier(), vs.getType()));
-
-		return null;
 	}
 
 	@Override
-	public TokenType visitMethodDeclaration(MethodDeclaration md) {
+	public void visitMethodDeclaration(MethodDeclaration md) {
 		if (currentScope.hasParent()) {
 			throw new SemanticException("Method " +
 			                            md.getIdentifier() +
@@ -76,11 +74,10 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 		md.getBody().accept(this);
 
 		currentScope = scope;
-		return null;
 	}
 
 	@Override
-	public TokenType visitBlock(Block bl) {
+	public void visitBlock(Block bl) {
 		var scope = currentScope;
 		currentScope = new Scope(scope);
 
@@ -89,43 +86,37 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 		}
 
 		currentScope = scope;
-		return null;
 	}
 
 	@Override
-	public TokenType visitMethodArgument(MethodArgument ma) {
+	public void visitMethodArgument(MethodArgument ma) {
 		currentScope.define(new Symbol(ma.getIdentifier(), ma.getType()));
-		return null;
 	}
 
 	@Override
-	public TokenType visitIfStatement(IfStatement is) {
+	public void visitIfStatement(IfStatement is) {
 		var conditionType = is.getCondition().accept(this);
 		if (conditionType != TokenType.BOOLEAN) {
 			throw new SemanticException("If condition must be boolean");
 		}
 
 		is.getBody().accept(this);
-		return null;
 	}
 
-	public TokenType visitWhileStatement(WhileStatement ws) {
+	public void visitWhileStatement(WhileStatement ws) {
 		var conditionType = ws.getCondition().accept(this);
 		if (conditionType != TokenType.BOOLEAN) {
 			throw new SemanticException("While condition must be boolean");
 		}
 
 		ws.getBody().accept(this);
-		return null;
 	}
 
 	@Override
-	public TokenType visitReturnStatement(ReturnStatement rs) {
-		return null;
-	}
+	public void visitReturnStatement(ReturnStatement rs) {}
 
 	@Override
-	public TokenType visitVariableAssignment(VariableAssignment va) {
+	public void visitVariableAssignment(VariableAssignment va) {
 		var symbol = currentScope.resolve(va.getIdentifier());
 		var type = va.getExpression().accept(this);
 
@@ -135,8 +126,6 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 			                            " to " +
 			                            symbol.getType());
 		}
-
-		return null;
 	}
 
 	// ───────── EXPRESSIONS ─────────
@@ -179,7 +168,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 			}
 		}
 
-		return null;
+		return TokenType.VOID;
 	}
 
 	// ───────── HELPERS ─────────

@@ -29,8 +29,8 @@ public class MethodDeclaration extends Statement {
 	}
 
 	@Override
-	public <R> R accept(ASTVisitor<R> visitor) {
-		return visitor.visitMethodDeclaration(this);
+	public <R> void accept(ASTVisitor<R> visitor) {
+		visitor.visitMethodDeclaration(this);
 	}
 
 	@Override

@@ -5,8 +5,8 @@ import ex5.ast.ASTVisitor;
 public class ReturnStatement extends Statement {
 
 	@Override
-	public <R> R accept(ASTVisitor<R> visitor) {
-		return visitor.visitReturnStatement(this);
+	public <R> void accept(ASTVisitor<R> visitor) {
+		visitor.visitReturnStatement(this);
 	}
 
 	@Override

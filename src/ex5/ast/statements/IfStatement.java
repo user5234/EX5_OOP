@@ -22,8 +22,8 @@ public class IfStatement extends Statement {
 	}
 
 	@Override
-	public <R> R accept(ASTVisitor<R> visitor) {
-		return visitor.visitIfStatement(this);
+	public <R> void accept(ASTVisitor<R> visitor) {
+		visitor.visitIfStatement(this);
 	}
 
 	@Override
