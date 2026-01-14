@@ -85,6 +85,17 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 		md.getBody().accept(this);
 
+		var statements = md.getBody().getStatements();
+
+		if (
+				statements.isEmpty() ||
+				!(statements.get(statements.size() - 1) instanceof ReturnStatement)
+		) {
+			throw new SemanticException("Method " +
+			                            md.getIdentifier() +
+			                            " must end with a return statement");
+		}
+
 		currentScope = scope;
 	}
 
