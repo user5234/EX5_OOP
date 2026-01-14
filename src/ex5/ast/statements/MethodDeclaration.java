@@ -36,6 +36,6 @@ public class MethodDeclaration extends Statement {
 			}
 		}
 
-		return "method " + identifier + "(" + args + ")\n" + "\t" + body.print();
+		return "method " + identifier + "(" + args + ")\n" + body.print().indent(4);
 	}
 }

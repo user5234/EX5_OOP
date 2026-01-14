@@ -22,6 +22,6 @@ public class WhileStatement extends Statement {
 
 	@Override
 	public String print() {
-		return "while\n" + "\tcondition: " + condition.print() + "\n" + "\tbody: " + body.print();
+		return "while\n" + "(" + condition.print() + "}\n" + body.print().indent(4);
 	}
 }

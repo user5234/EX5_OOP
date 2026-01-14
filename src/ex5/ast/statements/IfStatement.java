@@ -14,6 +14,6 @@ public class IfStatement extends Statement {
 
 	@Override
 	public String print() {
-		return "if\n" + "(" + condition.print() + ")\n" + "\t" + body.print();
+		return "if\n" + "(" + condition.print() + ")\n" + body.print().indent(4);
 	}
 }
