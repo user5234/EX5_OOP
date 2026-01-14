@@ -3,15 +3,27 @@ package ex5.lexer;
 import java.util.*;
 import java.util.regex.*;
 
+/**
+ * A simple lexer that tokenizes an input string into a list of tokens.
+ */
 public final class Lexer {
 
 	private final String line;
 	private int pos = 0;
 
+	/**
+	 * Constructs a Lexer for the given input line.
+	 * @param line the input string to tokenize
+	 */
 	public Lexer(String line) {
 		this.line = line;
 	}
 
+	/**
+	 * Tokenizes the input line into a list of tokens.
+	 * @return a list of tokens
+	 * @throws UnknownTokenException if an unknown token is encountered
+	 */
 	public List<Token> tokenize() throws UnknownTokenException {
 		var tokens = new ArrayList<Token>();
 
@@ -29,6 +41,12 @@ public final class Lexer {
 		return tokens;
 	}
 
+	/**
+	 * Identifies the current token from the input string.
+	 * @param input the remaining input string
+	 * @return the identified token
+	 * @throws UnknownTokenException if no valid token is found
+	 */
 	private Token currentToken(String input) throws UnknownTokenException {
 		for (var type : TokenType.values()) {
 			var matcher = type.getPattern().matcher(input);
@@ -41,6 +59,9 @@ public final class Lexer {
 		throw new UnknownTokenException("Unknown token " + token + " at position " + pos);
 	}
 
+	/**
+	 * Skips whitespace characters in the input line.
+	 */
 	private void skipWhitespace() {
 		while (pos < line.length() && Character.isWhitespace(line.charAt(pos))) {
 			pos++;
