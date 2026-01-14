@@ -8,26 +8,23 @@ import java.util.regex.*;
  */
 public final class Lexer {
 
-	private final String line;
-	private int pos = 0;
+	private int pos;
 
 	/**
-	 * Constructs a Lexer for the given input line.
-	 * @param line the input string to tokenize
+	 * Constructs a Lexer
 	 */
-	public Lexer(String line) {
-		this.line = line;
-	}
+	public Lexer() {}
 
 	/**
 	 * Tokenizes the input line into a list of tokens.
 	 * @return a list of tokens
 	 * @throws UnknownTokenException if an unknown token is encountered
 	 */
-	public List<Token> tokenize() throws UnknownTokenException {
+	public List<Token> tokenize(String line) throws UnknownTokenException {
 		var tokens = new ArrayList<Token>();
+		pos = 0;
 
-		skipWhitespace();
+		skipWhitespace(line);
 
 		while (pos < line.length()) {
 			var remaining = line.substring(pos);
@@ -36,7 +33,7 @@ public final class Lexer {
 			tokens.add(token);
 			pos += token.getValue().length();
 
-			skipWhitespace();
+			skipWhitespace(line);
 		}
 		return tokens;
 	}
@@ -57,12 +54,12 @@ public final class Lexer {
 		}
 		var token = input.split("\\s+")[0];
 		throw new UnknownTokenException("Unknown token " + token + " at position " + pos);
-	}
+	}   
 
 	/**
 	 * Skips whitespace characters in the input line.
 	 */
-	private void skipWhitespace() {
+	private void skipWhitespace(String line) {
 		while (pos < line.length() && Character.isWhitespace(line.charAt(pos))) {
 			pos++;
 		}

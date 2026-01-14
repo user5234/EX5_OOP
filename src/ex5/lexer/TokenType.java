@@ -11,6 +11,7 @@ public enum TokenType {
 	IF("if"),
 	WHILE("while"),
 	RETURN("return"),
+	FINAL("final"),
 
 	// Types
 	VOID("void"),
@@ -21,8 +22,8 @@ public enum TokenType {
 	CHAR("char"),
 
 	// Literals
-	INT_LITERAL("\\d+"),
-	DOUBLE_LITERAL("\\d+\\.\\d+"),
+	INT_LITERAL("-?\\d+"),
+	DOUBLE_LITERAL("-?\\d+\\.\\d+"),
 	STRING_LITERAL("\".*\""),
 	BOOLEAN_LITERAL("(true|false)"),
 	CHAR_LITERAL("'.*'"),
@@ -35,8 +36,8 @@ public enum TokenType {
 	AND("&&"),
 	LPAREN("\\("),
 	RPAREN("\\)"),
-	LBRACE("{"),
-	RBRACE("}"),
+	LBRACE("\\{"),
+	RBRACE("\\}"),
 	SEMICOLON(";"),
 	COMMA(","),
 	ASSIGN("=");
