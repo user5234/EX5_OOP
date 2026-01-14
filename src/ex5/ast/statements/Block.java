@@ -1,12 +1,24 @@
 package ex5.ast.statements;
 
+import ex5.ast.ASTVisitor;
+
 import java.util.List;
 
 public class Block extends Statement {
-	public final List<Statement> statements;
+
+	private final List<Statement> statements;
 
 	public Block(List<Statement> statements) {
 		this.statements = statements;
+	}
+
+	public List<Statement> getStatements() {
+		return statements;
+	}
+
+	@Override
+	public <R> R accept(ASTVisitor<R> visitor) {
+		return visitor.visitBlock(this);
 	}
 
 	@Override

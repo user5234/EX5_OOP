@@ -1,0 +1,197 @@
+package ex5.semantic;
+
+import ex5.ast.*;
+import ex5.ast.expressions.LiteralExpression;
+import ex5.ast.expressions.MethodCall;
+import ex5.ast.expressions.VariableExpression;
+import ex5.ast.statements.*;
+import ex5.lexer.Token;
+import ex5.lexer.TokenType;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class SemanticAnalyzer implements ASTVisitor<TokenType> {
+
+	private final MethodTable methodTable;
+	private final List<MethodDeclaration> deferredMethods;
+	private Scope currentScope;
+
+	public SemanticAnalyzer() {
+		methodTable = new MethodTable();
+		deferredMethods = new ArrayList<>();
+		currentScope = new Scope(null);
+	}
+
+	public void analyze(List<Statement> statements) {
+
+		for (var s : statements) {
+			if (s instanceof MethodDeclaration md) {
+				deferredMethods.add(md);
+			}
+			else {
+				s.accept(this);
+			}
+		}
+
+		for (var md : deferredMethods) {
+			md.accept(this);
+		}
+	}
+
+	// ───────── STATEMENTS ─────────
+
+	@Override
+	public TokenType visitVariableDeclaration(VariableDeclaration vs) {
+		var type = vs.getInitializer().accept(this);
+
+		if (type != vs.getType()) {
+			throw new SemanticException("Type mismatch: cannot assign " +
+			                            type +
+			                            " to " +
+			                            vs.getType());
+		}
+
+		currentScope.define(new Symbol(vs.getIdentifier(), vs.getType()));
+
+		return null;
+	}
+
+	@Override
+	public TokenType visitMethodDeclaration(MethodDeclaration md) {
+		if (currentScope.hasParent()) {
+			throw new SemanticException("Method " +
+			                            md.getIdentifier() +
+			                            " cannot be declared inside another method");
+		}
+
+		var scope = currentScope;
+		currentScope = new Scope(currentScope);
+		methodTable.define(new MethodSymbol(md.getIdentifier(), md.getArguments()));
+
+		for (var param : md.getArguments()) {
+			param.accept(this);
+		}
+
+		md.getBody().accept(this);
+
+		currentScope = scope;
+		return null;
+	}
+
+	@Override
+	public TokenType visitBlock(Block bl) {
+		var scope = currentScope;
+		currentScope = new Scope(scope);
+
+		for (var s : bl.getStatements()) {
+			s.accept(this);
+		}
+
+		currentScope = scope;
+		return null;
+	}
+
+	@Override
+	public TokenType visitMethodArgument(MethodArgument ma) {
+		currentScope.define(new Symbol(ma.getIdentifier(), ma.getType()));
+		return null;
+	}
+
+	@Override
+	public TokenType visitIfStatement(IfStatement is) {
+		var conditionType = is.getCondition().accept(this);
+		if (conditionType != TokenType.BOOLEAN) {
+			throw new SemanticException("If condition must be boolean");
+		}
+
+		is.getBody().accept(this);
+		return null;
+	}
+
+	public TokenType visitWhileStatement(WhileStatement ws) {
+		var conditionType = ws.getCondition().accept(this);
+		if (conditionType != TokenType.BOOLEAN) {
+			throw new SemanticException("While condition must be boolean");
+		}
+
+		ws.getBody().accept(this);
+		return null;
+	}
+
+	@Override
+	public TokenType visitReturnStatement(ReturnStatement rs) {
+		return null;
+	}
+
+	@Override
+	public TokenType visitVariableAssignment(VariableAssignment va) {
+		var symbol = currentScope.resolve(va.getIdentifier());
+		var type = va.getExpression().accept(this);
+
+		if (symbol.getType() != type) {
+			throw new SemanticException("Type mismatch: cannot assign " +
+			                            type +
+			                            " to " +
+			                            symbol.getType());
+		}
+
+		return null;
+	}
+
+	// ───────── EXPRESSIONS ─────────
+
+	@Override
+	public TokenType visitLiteralExpression(LiteralExpression le) {
+		return literalType(le.getLiteral());
+	}
+
+	@Override
+	public TokenType visitVariableExpression(VariableExpression ve) {
+		return currentScope.resolve(ve.getIdentifier()).getType();
+	}
+
+	@Override
+	public TokenType visitMethodCall(MethodCall mc) {
+		var method = methodTable.resolve(mc.getIdentifier());
+
+		if (mc.getArguments().size() != method.getParameters().size()) {
+			throw new SemanticException("Method " +
+			                            mc.getIdentifier() +
+			                            " expects " +
+			                            method.getParameters().size() +
+			                            " arguments, got " +
+			                            mc.getArguments().size());
+		}
+
+		for (int i = 0; i < mc.getArguments().size(); i++) {
+			TokenType argType = mc.getArguments().get(i).accept(this);
+			TokenType paramType = method.getParameters().get(i).getType();
+			if (argType != paramType) {
+				throw new SemanticException("Argument " +
+				                            (i + 1) +
+				                            " of method " +
+				                            mc.getIdentifier() +
+				                            " expects " +
+				                            paramType +
+				                            ", got " +
+				                            argType);
+			}
+		}
+
+		return null;
+	}
+
+	// ───────── HELPERS ─────────
+
+	private TokenType literalType(Token token) {
+		return switch (token.getType()) {
+			case INT_LITERAL -> TokenType.INT;
+			case DOUBLE_LITERAL -> TokenType.DOUBLE;
+			case STRING_LITERAL -> TokenType.STRING;
+			case BOOLEAN_LITERAL -> TokenType.BOOLEAN;
+			case CHAR_LITERAL -> TokenType.CHAR;
+			default -> throw new SemanticException("Invalid literal");
+		};
+	}
+}

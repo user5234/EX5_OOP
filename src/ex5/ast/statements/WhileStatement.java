@@ -1,5 +1,6 @@
 package ex5.ast.statements;
 
+import ex5.ast.ASTVisitor;
 import ex5.ast.expressions.Expression;
 
 public class WhileStatement extends Statement {
@@ -18,6 +19,11 @@ public class WhileStatement extends Statement {
 
 	public Block getBody() {
 		return body;
+	}
+
+	@Override
+	public <R> R accept(ASTVisitor<R> visitor) {
+		return visitor.visitWhileStatement(this);
 	}
 
 	@Override

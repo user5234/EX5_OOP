@@ -1,15 +1,29 @@
 package ex5.ast.statements;
 
+import ex5.ast.ASTVisitor;
 import ex5.ast.expressions.Expression;
 
 public class IfStatement extends Statement {
 
-	public final Expression condition;
-	public final Block body;
+	private final Expression condition;
+	private final Block body;
 
 	public IfStatement(Expression condition, Block body) {
 		this.condition = condition;
 		this.body = body;
+	}
+
+	public Expression getCondition() {
+		return condition;
+	}
+
+	public Block getBody() {
+		return body;
+	}
+
+	@Override
+	public <R> R accept(ASTVisitor<R> visitor) {
+		return visitor.visitIfStatement(this);
 	}
 
 	@Override

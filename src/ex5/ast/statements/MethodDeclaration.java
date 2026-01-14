@@ -1,5 +1,7 @@
 package ex5.ast.statements;
 
+import ex5.ast.ASTVisitor;
+
 import java.util.List;
 
 public class MethodDeclaration extends Statement {
@@ -24,6 +26,11 @@ public class MethodDeclaration extends Statement {
 
 	public Block getBody() {
 		return body;
+	}
+
+	@Override
+	public <R> R accept(ASTVisitor<R> visitor) {
+		return visitor.visitMethodDeclaration(this);
 	}
 
 	@Override

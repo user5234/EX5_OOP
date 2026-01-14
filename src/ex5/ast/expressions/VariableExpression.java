@@ -1,5 +1,7 @@
 package ex5.ast.expressions;
 
+import ex5.ast.ASTVisitor;
+
 public class VariableExpression extends Expression {
 
 	private final String identifier;
@@ -10,6 +12,11 @@ public class VariableExpression extends Expression {
 
 	public String getIdentifier() {
 		return identifier;
+	}
+
+	@Override
+	public <R> R accept(ASTVisitor<R> visitor) {
+		return visitor.visitVariableExpression(this);
 	}
 
 	@Override

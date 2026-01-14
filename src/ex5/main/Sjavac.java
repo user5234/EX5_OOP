@@ -1,12 +1,13 @@
 package ex5.main;
 
-import ex5.ast.ASTNode;
 import ex5.ast.statements.*;
 import ex5.lexer.Lexer;
 import ex5.lexer.Token;
 import ex5.lexer.UnknownTokenException;
 import ex5.parser.Parser;
 import ex5.parser.UnexpectedTokenException;
+import ex5.semantic.SemanticAnalyzer;
+import ex5.semantic.SemanticException;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -16,8 +17,8 @@ import java.util.ArrayList;
 public class Sjavac {
 
 	public static void main(String[] args) {
-		try(var fileReader = new BufferedReader(new FileReader(args[0]))) {
-			Lexer lexer = new Lexer();
+		try (var fileReader = new BufferedReader(new FileReader(args[0]))) {
+			var lexer = new Lexer();
 			var tokens = new ArrayList<Token>();
 
 			var line = "";
@@ -26,15 +27,21 @@ public class Sjavac {
 				tokens.addAll(lexer.tokenize(line));
 			}
 
-			Parser parser = new Parser(tokens);
+			var statements = new Parser(tokens).parseProgram();
 
-			var ast = parser.parseProgram();
-
-			for (ASTNode node : ast) {
-				System.out.println(node.print());
+			for (var s : statements) {
+				System.out.println(s.print());
 			}
-		} catch (IOException | UnexpectedTokenException | UnknownTokenException e) {
-			throw new RuntimeException(e);
+
+			new SemanticAnalyzer().analyze(statements);
+
+			System.out.println(0);
+		} catch (UnexpectedTokenException | UnknownTokenException | SemanticException e) {
+			System.err.println(e.getMessage());
+			System.out.println(1);
+		} catch (IOException e) {
+			System.err.println("IO Error: " + e.getMessage());
+			System.out.println(2);
 		}
 	}
 }

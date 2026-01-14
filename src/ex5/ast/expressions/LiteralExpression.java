@@ -1,5 +1,6 @@
 package ex5.ast.expressions;
 
+import ex5.ast.ASTVisitor;
 import ex5.lexer.Token;
 
 public class LiteralExpression extends Expression {
@@ -10,8 +11,13 @@ public class LiteralExpression extends Expression {
 		this.literal = literal;
 	}
 
-	public String getLiteral() {
-		return literal.getValue();
+	public Token getLiteral() {
+		return literal;
+	}
+
+	@Override
+	public <R> R accept(ASTVisitor<R> visitor) {
+		return visitor.visitLiteralExpression(this);
 	}
 
 	@Override
