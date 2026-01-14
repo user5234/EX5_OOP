@@ -1,8 +1,6 @@
 package ex5.main;
 
 import ex5.ast.ASTNode;
-import ex5.ast.expressions.LiteralExpression;
-import ex5.ast.expressions.VariableExpression;
 import ex5.ast.statements.*;
 import ex5.lexer.Lexer;
 import ex5.lexer.Token;
