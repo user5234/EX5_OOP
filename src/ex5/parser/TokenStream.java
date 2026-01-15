@@ -18,6 +18,12 @@ public class TokenStream {
 		return tokens.get(pos);
 	}
 
+	public Token peek(int k) {
+	    int idx = Math.min(pos + k, tokens.size() - 1);
+	    return tokens.get(idx);
+	}
+	
+
 	public boolean isAtEnd() {
 		return pos >= tokens.size();
 	}

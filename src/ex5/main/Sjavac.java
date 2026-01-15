@@ -17,6 +17,12 @@ import java.util.ArrayList;
 public class Sjavac {
 
 	public static void main(String[] args) {
+		if (args.length != 1) {
+    	   System.err.println("Usage: Sjavac <file.sjava>");
+    	   System.out.println(2);
+    	   return;
+    	}
+		
 		try (var fileReader = new BufferedReader(new FileReader(args[0]))) {
 			var lexer = new Lexer();
 			var tokens = new ArrayList<Token>();

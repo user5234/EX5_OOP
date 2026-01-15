@@ -21,6 +21,7 @@ public interface ASTVisitor<R> {
 	void visitVariableAssignment(VariableAssignment va);
 	void visitVariableDeclaration(VariableDeclaration vd);
 	void visitWhileStatement(WhileStatement ws);
+	void visitMethodCallStatement(MethodCallStatement mcs);
 
 	// Expressions
 	R visitLiteralExpression(LiteralExpression le);

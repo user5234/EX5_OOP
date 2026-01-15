@@ -16,8 +16,10 @@ public class Parser {
 
 	public List<Statement> parseProgram() throws UnexpectedTokenException {
 	    List<Statement> statements = new ArrayList<>();
+		consumeNewlines();
 	    while (!ts.isAtEnd()) {
 	        statements.addAll(parseStatement());
+			consumeNewlines();
 	    }
 	    return statements;
 	}
@@ -29,14 +31,44 @@ public class Parser {
 	        case IF -> List.of(parseIf());
 	        case WHILE -> List.of(parseWhile());
 	        case RETURN -> List.of(parseReturn());
-
-	        // NEW: allow FINAL to start a declaration
 	        case FINAL, INT, DOUBLE, STRING, BOOLEAN, CHAR -> parseVariableDeclarations();
-
 	        case VOID -> List.of(parseMethodDeclaration());
-	        default -> List.of(parseVariableAssignment());
+	        case IDENTIFIER -> List.of(parseIdentifierStartingStatement()); // NEW
+	        default -> throw new UnexpectedTokenException("Unexpected token: " + ts.peek());
 	    };
 	}
+
+	private Statement parseIdentifierStartingStatement() throws UnexpectedTokenException {
+	    // Lookahead: IDENTIFIER followed by '(' means method call statement
+	    if (ts.peek(1).getType() == TokenType.LPAREN) {   // you need peek(int)
+	        var call = parseMethodCall();
+	        ts.expect(TokenType.SEMICOLON);
+	        expectNewline();
+	        return new MethodCallStatement(call);
+	    }
+
+	    // Otherwise must be assignment
+	    return parseVariableAssignment();
+	}
+
+	private MethodCall parseMethodCall() throws UnexpectedTokenException {
+	    var name = ts.expect(TokenType.IDENTIFIER);
+		
+	    ts.expect(TokenType.LPAREN);
+		
+	    var args = new ArrayList<Expression>();
+	    if (ts.peek().getType() != TokenType.RPAREN) {
+	        args.add(parseExpression());
+	        while (ts.match(TokenType.COMMA)) {
+	            args.add(parseExpression());
+	        }
+	    }
+	
+	    ts.expect(TokenType.RPAREN);
+	
+	    return new MethodCall(name.getValue(), args);
+	}
+	
 
 	private IfStatement parseIf() throws UnexpectedTokenException {
 		ts.expect(TokenType.IF);
@@ -92,14 +124,15 @@ public class Parser {
 	}
 
 	private Block parseBlock() throws UnexpectedTokenException {
-	    ts.expect(TokenType.LBRACE);
-
-	    var statements = new ArrayList<Statement>();
-	    while (!ts.match(TokenType.RBRACE)) {
-	        statements.addAll(parseStatement());
-	    }
-
-	    return new Block(statements);
+	ts.expect(TokenType.LBRACE);
+	consumeNewlines();   
+	var statements = new ArrayList<Statement>();
+	while (!ts.match(TokenType.RBRACE)) {
+	    statements.addAll(parseStatement());
+	    consumeNewlines(); 
+	}
+	expectNewline();     
+	return new Block(statements);
 	}
 
 	private List<Statement> parseVariableDeclarations() throws UnexpectedTokenException {
@@ -130,6 +163,7 @@ public class Parser {
 	   }
 
 	   ts.expect(TokenType.SEMICOLON);
+	   expectNewline();
 	   return decls;
 	}
 
@@ -180,27 +214,35 @@ public class Parser {
 
 
 	private List<MethodArgument> parseMethodArguments() throws UnexpectedTokenException {
-		var arguments = new ArrayList<MethodArgument>();
+	    var arguments = new ArrayList<MethodArgument>();
+	    ts.expect(TokenType.LPAREN);
+	    // Empty parameter list: ()
+	    if (ts.peek().getType() == TokenType.RPAREN) {
+	        ts.expect(TokenType.RPAREN);
+	        return arguments;
+	    }
+	    while (true) {
+	        var type = ts.consume().getType();
+	        switch (type) {
+	            case INT, DOUBLE, STRING, BOOLEAN, CHAR -> {}
+	            default -> throw new UnexpectedTokenException("Invalid argument type: " + type);
+	        }
+	        var name = ts.expect(TokenType.IDENTIFIER);
+	        arguments.add(new MethodArgument(type, name.getValue()));
+			
+	        // If there's a comma, another parameter must follow
+	        if (ts.match(TokenType.COMMA)) {
+	            continue;
+	        }
 
-		ts.expect(TokenType.LPAREN);
+	        // Otherwise we must be at ')'
+	        ts.expect(TokenType.RPAREN);
+	        break;
+	    }
 
-		while (ts.peek().getType() != TokenType.RPAREN) {
-			var type = ts.consume().getType();
-
-			switch (type) {
-				case INT, DOUBLE, STRING, BOOLEAN, CHAR -> {}
-				default -> throw new UnexpectedTokenException("Invalid argument type: " + type);
-			}
-
-			var name = ts.expect(TokenType.IDENTIFIER);
-
-			arguments.add(new MethodArgument(type, name.getValue()));
-		}
-
-		ts.expect(TokenType.RPAREN);
-
-		return arguments;
+	    return arguments;
 	}
+
 
 	private void consumeNewlines() {
 	    while (ts.match(TokenType.NEWLINE)) {

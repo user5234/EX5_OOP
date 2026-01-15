@@ -32,4 +32,9 @@ public class Scope {
 	public boolean hasParent() {
 		return parent != null;
 	}
+
+	public boolean isDefinedInAnyScope(String name) {
+	    if (symbols.containsKey(name)) return true;
+	    return parent != null && parent.isDefinedInAnyScope(name);
+	}
 }

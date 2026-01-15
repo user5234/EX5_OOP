@@ -25,19 +25,20 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	}
 
 	public void analyze(List<Statement> statements) {
+	    // Pass 1: collect/define all methods (signatures only)
+	    for (var s : statements) {
+	        if (s instanceof MethodDeclaration md) {
+	            deferredMethods.add(md);
+	            methodTable.define(new MethodSymbol(md.getIdentifier(), md.getArguments()));
+	        } else {
+	            s.accept(this);
+	        }
+	    }
 
-		for (var s : statements) {
-			if (s instanceof MethodDeclaration md) {
-				deferredMethods.add(md);
-			}
-			else {
-				s.accept(this);
-			}
-		}
-
-		for (var md : deferredMethods) {
-			md.accept(this);
-		}
+	    // Pass 2: analyze method bodies
+	    for (var md : deferredMethods) {
+	        md.accept(this);
+	    }
 	}
 
 	@Override
@@ -77,28 +78,22 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 			                            " cannot be declared inside another method");
 		}
 
-		var scope = currentScope;
-		currentScope = new Scope(currentScope);
-		methodTable.define(new MethodSymbol(md.getIdentifier(), md.getArguments()));
+		var outerScope = currentScope;
 
+		currentScope = new Scope(null);
 		for (var param : md.getArguments()) {
-			param.accept(this);
+		    param.accept(this);
 		}
 
 		md.getBody().accept(this);
 
 		var statements = md.getBody().getStatements();
-
-		if (
-				statements.isEmpty() ||
-				!(statements.get(statements.size() - 1) instanceof ReturnStatement)
-		) {
-			throw new SemanticException("Method " +
-			                            md.getIdentifier() +
-			                            " must end with a return statement");
+		if (statements.isEmpty() || !(statements.get(statements.size() - 1) instanceof ReturnStatement)) {
+		    throw new SemanticException("Method " + md.getIdentifier() + " must end with a return statement");
 		}
 
-		currentScope = scope;
+		currentScope = outerScope;
+
 	}
 
 
@@ -125,11 +120,14 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	    symbol.setInitialized(true);
 	}
 
-
-
 	@Override
 	public void visitVariableDeclaration(VariableDeclaration vs) {
-	    boolean initd = (vs.getInitializer() != null);	
+	    // NEW: forbid shadowing any existing symbol (including parameters)
+	    if (currentScope.isDefinedInAnyScope(vs.getIdentifier())) {
+	        throw new SemanticException("Variable already declared: " + vs.getIdentifier());
+	    }
+
+	    boolean initd = (vs.getInitializer() != null);
 
 	    if (initd) {
 	        var initType = vs.getInitializer().accept(this);
@@ -137,13 +135,10 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	            throw new SemanticException("Type mismatch: cannot assign " +
 	                    initType + " to " + vs.getType());
 	        }
-	    }	
+	    }
 
-	    // define symbol with init state and final
 	    currentScope.define(new Symbol(vs.getIdentifier(), vs.getType(), vs.isFinal(), initd));
 	}
-
-
 
 	public void visitWhileStatement(WhileStatement ws) {
 		var conditionType = ws.getCondition().accept(this);
@@ -206,6 +201,12 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 	    return TokenType.BOOLEAN;
 	}
+
+	@Override
+		public void visitMethodCallStatement(MethodCallStatement mcs) {
+		    mcs.getCall().accept(this);
+		}
+		
 
 
 	// ───────── HELPERS ─────────

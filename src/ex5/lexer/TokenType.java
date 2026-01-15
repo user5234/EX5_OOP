@@ -17,7 +17,7 @@ public enum TokenType {
 	VOID("void"),
 	INT("int"),
 	DOUBLE("double"),
-	STRING("string"),
+	STRING("String"),
 	BOOLEAN("boolean"),
 	CHAR("char"),
 
