@@ -6,39 +6,46 @@ import ex5.ast.expressions.Expression;
 
 public class VariableDeclaration extends Statement {
 
-	private final TokenType type;
-	private final String identifier;
-	private final Expression initializer;
+    private final TokenType type;
+    private final String identifier;
+    private final Expression initializer; // may be null
+    private final boolean isFinal;
 
-	public VariableDeclaration(TokenType type, String identifier, Expression initializer) {
-		this.type = type;
-		this.identifier = identifier;
-		this.initializer = initializer;
-	}
+    public VariableDeclaration(TokenType type, String identifier, Expression initializer, boolean isFinal) {
+        this.type = type;
+        this.identifier = identifier;
+        this.initializer = initializer;
+        this.isFinal = isFinal;
+    }
 
-	public  TokenType getType() {
-		return type;
-	}
-	public String getIdentifier() {
-		return identifier;
-	}
+    public TokenType getType() {
+        return type;
+    }
 
-	public Expression getInitializer() {
-		return initializer;
-	}
+    public String getIdentifier() {
+        return identifier;
+    }
 
-	@Override
-	public <R> void accept(ASTVisitor<R> visitor) {
-		visitor.visitVariableDeclaration(this);
-	}
+    public Expression getInitializer() {
+        return initializer;
+    }
 
-	@Override
-	public String print() {
-		if (initializer != null) {
-			return type + " " + identifier + " = " + initializer.print();
-		}
-		else {
-			return type + " " + identifier;
-		}
-	}
+    public boolean isFinal() {
+        return isFinal;
+    }
+
+    @Override
+    public <R> void accept(ASTVisitor<R> visitor) {
+        visitor.visitVariableDeclaration(this);
+    }
+
+    @Override
+    public String print() {
+        String f = isFinal ? "final " : "";
+        if (initializer != null) {
+            return f + type + " " + identifier + " = " + initializer.print();
+        } else {
+            return f + type + " " + identifier;
+        }
+    }
 }

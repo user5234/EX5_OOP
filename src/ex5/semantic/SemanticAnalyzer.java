@@ -65,8 +65,9 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 	@Override
 	public void visitMethodArgument(MethodArgument ma) {
-		currentScope.define(new Symbol(ma.getIdentifier(), ma.getType()));
+	    currentScope.define(new Symbol(ma.getIdentifier(), ma.getType(), false, true));
 	}
+
 
 	@Override
 	public void visitMethodDeclaration(MethodDeclaration md) {
@@ -108,26 +109,40 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	@Override
 	public void visitVariableAssignment(VariableAssignment va) {
 	    var symbol = currentScope.resolve(va.getIdentifier());
-	    var type = va.getExpression().accept(this);
 
-	    if (symbol.getType() != type) {
-	        throw new SemanticException("Type mismatch: cannot assign " + type + " to " + symbol.getType());
+	    // final rule: cannot change after initialized
+	    if (symbol.isFinal() && symbol.isInitialized()) {
+	        throw new SemanticException("Cannot assign to final variable: " + va.getIdentifier());
 	    }
 
-	    symbol.setInitialized(true); 
+	    var exprType = va.getExpression().accept(this);
+
+	    if (!isAssignable(symbol.getType(), exprType)) {
+	        throw new SemanticException("Type mismatch: cannot assign " +
+	                exprType + " to " + symbol.getType());
+	    }
+
+	    symbol.setInitialized(true);
 	}
+
 
 
 	@Override
 	public void visitVariableDeclaration(VariableDeclaration vs) {
-	    var type = vs.getInitializer().accept(this);
-	
-	    if (type != vs.getType()) {
-	        throw new SemanticException("Type mismatch: cannot assign " + type + " to " + vs.getType());
-	    }
-	
-	    currentScope.define(new Symbol(vs.getIdentifier(), vs.getType(), true)); // NEW explicit
+	    boolean initd = (vs.getInitializer() != null);	
+
+	    if (initd) {
+	        var initType = vs.getInitializer().accept(this);
+	        if (!isAssignable(vs.getType(), initType)) {
+	            throw new SemanticException("Type mismatch: cannot assign " +
+	                    initType + " to " + vs.getType());
+	        }
+	    }	
+
+	    // define symbol with init state and final
+	    currentScope.define(new Symbol(vs.getIdentifier(), vs.getType(), vs.isFinal(), initd));
 	}
+
 
 
 	public void visitWhileStatement(WhileStatement ws) {
@@ -145,13 +160,14 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	}
 
 	@Override
-public TokenType visitVariableExpression(VariableExpression ve) {
-    var sym = currentScope.resolve(ve.getIdentifier());
-    if (!sym.isInitialized()) {
-        throw new SemanticException("Variable " + ve.getIdentifier() + " used before initialization");
-    }
-    return sym.getType();
-}
+	public TokenType visitVariableExpression(VariableExpression ve) {
+	    var sym = currentScope.resolve(ve.getIdentifier());
+	    if (!sym.isInitialized()) {
+	        throw new SemanticException("Variable " + ve.getIdentifier() + " used before initialization");
+	    }
+	    return sym.getType();
+	}
+
 
 	@Override
 	public TokenType visitMethodCall(MethodCall mc) {
@@ -169,17 +185,12 @@ public TokenType visitVariableExpression(VariableExpression ve) {
 		for (int i = 0; i < mc.getArguments().size(); i++) {
 			TokenType argType = mc.getArguments().get(i).accept(this);
 			TokenType paramType = method.getParameters().get(i).getType();
-			if (argType != paramType) {
-				throw new SemanticException("Argument " +
-				                            (i + 1) +
-				                            " of method " +
-				                            mc.getIdentifier() +
-				                            " expects " +
-				                            paramType +
-				                            ", got " +
-				                            argType);
+			if (!isAssignable(paramType, argType)) {
+			    throw new SemanticException("Argument " + (i + 1) +
+			            " of method " + mc.getIdentifier() +
+			            " expects " + paramType + ", got " + argType);
 			}
-		}
+			}
 
 		return TokenType.VOID;
 	}
@@ -214,4 +225,15 @@ public TokenType visitVariableExpression(VariableExpression ve) {
 	  return t == TokenType.BOOLEAN || t == TokenType.INT || t == TokenType.DOUBLE;
 	}
 
+	private boolean isAssignable(TokenType target, TokenType source) {
+    	if (target == source) return true;
+		
+    	// numeric promotion
+    	if (target == TokenType.DOUBLE && source == TokenType.INT) return true;
+		
+    	// your rule: boolean can accept int/double
+    	if (target == TokenType.BOOLEAN && (source == TokenType.INT || source == TokenType.DOUBLE)) return true;
+		
+    	return false;
+	}
 }

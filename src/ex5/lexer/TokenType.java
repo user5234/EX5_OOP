@@ -24,12 +24,13 @@ public enum TokenType {
 	// Literals
 	DOUBLE_LITERAL("-?\\d+\\.\\d+"),
 	INT_LITERAL("-?\\d+"),
-	STRING_LITERAL("\".*\""),
+	STRING_LITERAL("\"[^\"]*\""),
 	BOOLEAN_LITERAL("(true|false)"),
-	CHAR_LITERAL("'.*'"),
+	CHAR_LITERAL("'[^']'"),
+	
+	// Identifier (must not start with a digit)
+	IDENTIFIER("[A-Za-z_][A-Za-z0-9_]*"),
 
-	// Identifier
-	IDENTIFIER("\\w+"),
 
 	// Symbols
 	OR("\\|\\|"),
