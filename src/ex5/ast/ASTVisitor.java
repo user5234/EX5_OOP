@@ -5,6 +5,10 @@ import ex5.ast.expressions.MethodCall;
 import ex5.ast.expressions.VariableExpression;
 import ex5.ast.statements.*;
 
+/**
+ * An interface for visiting AST nodes.
+ * @param <R> the return type of the visit methods
+ */
 public interface ASTVisitor<R> {
 
 	// Statements
