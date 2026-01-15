@@ -21,22 +21,42 @@ public final class Lexer {
 	 * @throws UnknownTokenException if an unknown token is encountered
 	 */
 	public List<Token> tokenize(String line) throws UnknownTokenException {
-		var tokens = new ArrayList<Token>();
-		pos = 0;
+    	var tokens = new ArrayList<Token>();
+    	pos = 0;
 
-		skipWhitespace(line);
+    	// (Recommended) remove inline comments too
+    	int commentIdx = line.indexOf("//");
+    	if (commentIdx >= 0) {
+    	    line = line.substring(0, commentIdx);
+    	}
 
-		while (pos < line.length()) {
-			var remaining = line.substring(pos);
+    	skipWhitespace(line);
 
-			var token = currentToken(remaining);
-			tokens.add(token);
-			pos += token.getValue().length();
+    	while (pos < line.length()) {
+    	    var remaining = line.substring(pos);
 
-			skipWhitespace(line);
-		}
-		return tokens;
+    	    var token = currentToken(remaining);
+    	    tokens.add(token);
+    	    pos += token.getValue().length();
+
+    	    // Require newline after '}' always:
+    	    // meaning: after a right brace, the rest of the line must be only whitespace.
+    	    if (token.getType() == TokenType.RBRACE) { // adjust name to your enum
+    	        skipWhitespace(line);
+    	        if (pos < line.length()) {
+    	            throw new UnknownTokenException("Expected newline after '}'");
+    	        }
+    	        break; // done with this line
+    	    }
+
+    	    skipWhitespace(line);
+    	}
+
+    	// Always end each input line with a NEWLINE token
+    	tokens.add(new Token(TokenType.NEWLINE, "\n"));
+    	return tokens;
 	}
+
 
 	/**
 	 * Identifies the current token from the input string.

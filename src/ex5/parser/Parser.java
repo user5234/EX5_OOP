@@ -15,11 +15,13 @@ public class Parser {
 	}
 
 	public List<Statement> parseProgram() throws UnexpectedTokenException {
-		List<Statement> statements = new ArrayList<>();
-		while (!ts.isAtEnd()) {
-			statements.add(parseStatement());
-		}
-		return statements;
+	    List<Statement> statements = new ArrayList<>();
+	    consumeNewlines();                 // NEW
+	    while (!ts.isAtEnd()) {
+	        statements.add(parseStatement());
+	        consumeNewlines();             // NEW: allow blank lines between statements
+	    }
+	    return statements;
 	}
 
 	private Statement parseStatement() throws UnexpectedTokenException {
@@ -62,22 +64,23 @@ public class Parser {
 	}
 
 	private ReturnStatement parseReturn() throws UnexpectedTokenException {
-		ts.expect(TokenType.RETURN);
-		ts.expect(TokenType.SEMICOLON);
-
-		return new ReturnStatement();
+	    ts.expect(TokenType.RETURN);
+	    ts.expect(TokenType.SEMICOLON);
+	    expectNewline();                 // NEW
+	    return new ReturnStatement();
 	}
 
 	private VariableDeclaration parseVariableDeclaration() throws UnexpectedTokenException {
-		var type = ts.consume().getType();
-		var name = ts.expect(TokenType.IDENTIFIER);
+	    var type = ts.consume().getType();
+	    var name = ts.expect(TokenType.IDENTIFIER);
 
-		ts.expect(TokenType.ASSIGN);
+	    ts.expect(TokenType.ASSIGN);
 
-		var value = parseExpression();
-		ts.expect(TokenType.SEMICOLON);
+	    var value = parseExpression();
+	    ts.expect(TokenType.SEMICOLON);
+	    expectNewline();                 // NEW
 
-		return new VariableDeclaration(type, name.getValue(), value);
+	    return new VariableDeclaration(type, name.getValue(), value);
 	}
 
 	private MethodDeclaration parseMethodDeclaration() throws UnexpectedTokenException {
@@ -91,25 +94,31 @@ public class Parser {
 	}
 
 	private VariableAssignment parseVariableAssignment() throws UnexpectedTokenException {
-		var name = ts.expect(TokenType.IDENTIFIER);
-		ts.expect(TokenType.ASSIGN);
+	    var name = ts.expect(TokenType.IDENTIFIER);
+	    ts.expect(TokenType.ASSIGN);
 
-		var value = parseExpression();
-		ts.expect(TokenType.SEMICOLON);
+	    var value = parseExpression();
+	    ts.expect(TokenType.SEMICOLON);
+	    expectNewline();                 
 
-		return new VariableAssignment(name.getValue(), value);
+	    return new VariableAssignment(name.getValue(), value);
 	}
 
 	private Block parseBlock() throws UnexpectedTokenException {
-		ts.expect(TokenType.LBRACE);
+	    ts.expect(TokenType.LBRACE);
 
-		var statements = new ArrayList<Statement>();
-		while (!ts.match(TokenType.RBRACE)) {
-			statements.add(parseStatement());
-		}
+	    consumeNewlines(); 
 
-		return new Block(statements);
+	    var statements = new ArrayList<Statement>();
+	    while (!ts.match(TokenType.RBRACE)) {
+	        statements.add(parseStatement());
+	        consumeNewlines(); 
+	    }
+
+	    expectNewline();                 
+	    return new Block(statements);
 	}
+
 
 	private Expression parseExpression() throws UnexpectedTokenException {
 		var t = ts.peek();
@@ -146,6 +155,20 @@ public class Parser {
 
 		return arguments;
 	}
+
+	private void consumeNewlines() {
+	    while (ts.match(TokenType.NEWLINE)) {
+	        // keep consuming
+	    }
+	}
+
+	private void expectNewline() throws UnexpectedTokenException {
+	    if (!ts.match(TokenType.NEWLINE)) {
+	        throw new UnexpectedTokenException("Expected newline");
+	    }
+	    consumeNewlines(); // optionally allow multiple blank lines
+	}
+
 }
 
 

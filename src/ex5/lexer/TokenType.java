@@ -40,6 +40,7 @@ public enum TokenType {
 	RBRACE("\\}"),
 	SEMICOLON(";"),
 	COMMA(","),
+	NEWLINE("\\n"),
 	ASSIGN("=");
 
 	private final Pattern pattern;
