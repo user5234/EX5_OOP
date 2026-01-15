@@ -4,6 +4,7 @@ import ex5.ast.*;
 import ex5.ast.expressions.LiteralExpression;
 import ex5.ast.expressions.MethodCall;
 import ex5.ast.expressions.VariableExpression;
+import ex5.ast.expressions.LogicalExpression;
 import ex5.ast.statements.*;
 import ex5.lexer.Token;
 import ex5.lexer.TokenType;
@@ -54,7 +55,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	@Override
 	public void visitIfStatement(IfStatement is) {
 		var conditionType = is.getCondition().accept(this);
-		if (conditionType != TokenType.BOOLEAN) {
+		if (!isConditionOperandType(conditionType)) {
 			throw new SemanticException("If condition must be boolean");
 		}
 
@@ -106,34 +107,32 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 	@Override
 	public void visitVariableAssignment(VariableAssignment va) {
-		var symbol = currentScope.resolve(va.getIdentifier());
-		var type = va.getExpression().accept(this);
+	    var symbol = currentScope.resolve(va.getIdentifier());
+	    var type = va.getExpression().accept(this);
 
-		if (symbol.getType() != type) {
-			throw new SemanticException("Type mismatch: cannot assign " +
-			                            type +
-			                            " to " +
-			                            symbol.getType());
-		}
+	    if (symbol.getType() != type) {
+	        throw new SemanticException("Type mismatch: cannot assign " + type + " to " + symbol.getType());
+	    }
+
+	    symbol.setInitialized(true); 
 	}
+
 
 	@Override
 	public void visitVariableDeclaration(VariableDeclaration vs) {
-		var type = vs.getInitializer().accept(this);
-
-		if (type != vs.getType()) {
-			throw new SemanticException("Type mismatch: cannot assign " +
-			                            type +
-			                            " to " +
-			                            vs.getType());
-		}
-
-		currentScope.define(new Symbol(vs.getIdentifier(), vs.getType()));
+	    var type = vs.getInitializer().accept(this);
+	
+	    if (type != vs.getType()) {
+	        throw new SemanticException("Type mismatch: cannot assign " + type + " to " + vs.getType());
+	    }
+	
+	    currentScope.define(new Symbol(vs.getIdentifier(), vs.getType(), true)); // NEW explicit
 	}
+
 
 	public void visitWhileStatement(WhileStatement ws) {
 		var conditionType = ws.getCondition().accept(this);
-		if (conditionType != TokenType.BOOLEAN) {
+		if (!isConditionOperandType(conditionType)) {
 			throw new SemanticException("While condition must be boolean");
 		}
 
@@ -146,9 +145,13 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	}
 
 	@Override
-	public TokenType visitVariableExpression(VariableExpression ve) {
-		return currentScope.resolve(ve.getIdentifier()).getType();
-	}
+public TokenType visitVariableExpression(VariableExpression ve) {
+    var sym = currentScope.resolve(ve.getIdentifier());
+    if (!sym.isInitialized()) {
+        throw new SemanticException("Variable " + ve.getIdentifier() + " used before initialization");
+    }
+    return sym.getType();
+}
 
 	@Override
 	public TokenType visitMethodCall(MethodCall mc) {
@@ -181,6 +184,19 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 		return TokenType.VOID;
 	}
 
+	@Override
+	public TokenType visitLogicalExpression(LogicalExpression le) {
+	    TokenType left = le.getLeft().accept(this);
+	    TokenType right = le.getRight().accept(this);
+
+	    if (!isConditionOperandType(left) || !isConditionOperandType(right)) {
+	        throw new SemanticException("Operands of &&/|| must be boolean/int/double");
+	    }
+
+	    return TokenType.BOOLEAN;
+	}
+
+
 	// ───────── HELPERS ─────────
 
 	private TokenType literalType(Token token) {
@@ -193,4 +209,9 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 			default -> throw new SemanticException("Invalid literal");
 		};
 	}
+
+	private boolean isConditionOperandType(TokenType t) {
+	  return t == TokenType.BOOLEAN || t == TokenType.INT || t == TokenType.DOUBLE;
+	}
+
 }

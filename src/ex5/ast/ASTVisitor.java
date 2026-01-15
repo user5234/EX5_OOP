@@ -1,6 +1,7 @@
 package ex5.ast;
 
 import ex5.ast.expressions.LiteralExpression;
+import ex5.ast.expressions.LogicalExpression;
 import ex5.ast.expressions.MethodCall;
 import ex5.ast.expressions.VariableExpression;
 import ex5.ast.statements.*;
@@ -25,4 +26,5 @@ public interface ASTVisitor<R> {
 	R visitLiteralExpression(LiteralExpression le);
 	R visitVariableExpression(VariableExpression ve);
 	R visitMethodCall(MethodCall mc);
+	R visitLogicalExpression(LogicalExpression le);
 }

@@ -41,8 +41,7 @@ public class Parser {
 		ts.expect(TokenType.IF);
 		ts.expect(TokenType.LPAREN);
 
-		var condition = parseExpression();
-
+		var condition = parseCondition();
 		ts.expect(TokenType.RPAREN);
 
 		var thenBranch = parseBlock();
@@ -54,7 +53,7 @@ public class Parser {
 		ts.expect(TokenType.WHILE);
 		ts.expect(TokenType.LPAREN);
 
-		var condition = parseExpression();
+		var condition = parseCondition();
 
 		ts.expect(TokenType.RPAREN);
 
@@ -132,6 +131,38 @@ public class Parser {
 			default -> throw new UnexpectedTokenException("Invalid expression: " + t);
 		};
 	}
+
+	private Expression parseCondition() throws UnexpectedTokenException {
+    	Expression left = parseConditionAtom();
+
+    	while (true) {
+    	    if (ts.match(TokenType.AND)) {              // && token type
+    	        Expression right = parseConditionAtom();
+    	        left = new LogicalExpression(left, TokenType.AND, right);
+    	    } else if (ts.match(TokenType.OR)) {        // || token type
+    	        Expression right = parseConditionAtom();
+    	        left = new LogicalExpression(left, TokenType.OR, right);
+    	    } else {
+    	        break;
+    	    }
+    	}
+    	return left;
+	}
+
+	private Expression parseConditionAtom() throws UnexpectedTokenException {
+	    Token t = ts.peek();
+
+	    return switch (t.getType()) {
+	        case BOOLEAN_LITERAL, INT_LITERAL, DOUBLE_LITERAL ->
+	                new LiteralExpression(ts.consume());
+
+	        case IDENTIFIER ->
+	                new VariableExpression(ts.consume().getValue());
+
+	        default -> throw new UnexpectedTokenException("Invalid condition atom: " + t);
+	    };
+	}
+
 
 	private List<MethodArgument> parseMethodArguments() throws UnexpectedTokenException {
 		var arguments = new ArrayList<MethodArgument>();
