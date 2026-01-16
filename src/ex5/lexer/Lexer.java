@@ -1,8 +1,6 @@
 package ex5.lexer;
 
 import java.util.*;
-import java.util.regex.*;
-
 /**
  * A simple lexer that tokenizes an input string into a list of tokens.
  */

@@ -1,6 +1,5 @@
 package ex5.main;
 
-import ex5.ast.statements.*;
 import ex5.lexer.Lexer;
 import ex5.lexer.Token;
 import ex5.lexer.UnknownTokenException;
