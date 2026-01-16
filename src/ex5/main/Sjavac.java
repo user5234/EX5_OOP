@@ -14,8 +14,15 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 
+/**
+ * Main class for the Sjavac compiler.
+ */
 public class Sjavac {
 
+	/**
+	 * Main method to run the Sjavac compiler.
+	 * @param args Command line arguments; expects a single argument which is the path to the .sjava file.
+	 */
 	public static void main(String[] args) {
 		if (args.length != 1) {
     	   System.err.println("Usage: Sjavac <file.sjava>");

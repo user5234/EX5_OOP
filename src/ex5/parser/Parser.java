@@ -6,14 +6,26 @@ import ex5.lexer.*;
 
 import java.util.*;
 
+/**
+ * Parser for the Sjavac language.
+ */
 public class Parser {
 
 	private final TokenStream ts;
 
+	/**
+	 * Constructs a Parser with the given list of tokens.
+	 * @param tokens List of tokens to parse.
+	 */
 	public Parser(List<Token> tokens) {
 		this.ts = new TokenStream(tokens);
 	}
 
+	/**
+	 * Parses the entire program and returns a list of statements.
+	 * @return List of parsed statements.
+	 * @throws UnexpectedTokenException if an unexpected token is encountered.
+	 */
 	public List<Statement> parseProgram() throws UnexpectedTokenException {
 	    List<Statement> statements = new ArrayList<>();
 		consumeNewlines();
@@ -24,6 +36,11 @@ public class Parser {
 	    return statements;
 	}
 
+	/**
+	 * Parses a single statement based on the next token.
+	 * @return List of parsed statements.
+	 * @throws UnexpectedTokenException if an unexpected token is encountered.
+	 */
 	private List<Statement> parseStatement() throws UnexpectedTokenException {
 	    TokenType type = ts.peek().getType();
 
@@ -38,6 +55,11 @@ public class Parser {
 	    };
 	}
 
+	/**
+	 * Parses a statement that starts with an identifier.
+	 * @return Parsed statement.
+	 * @throws UnexpectedTokenException
+	 */
 	private Statement parseIdentifierStartingStatement() throws UnexpectedTokenException {
 	    // Lookahead: IDENTIFIER followed by '(' means method call statement
 	    if (ts.peek(1).getType() == TokenType.LPAREN) {   // you need peek(int)
@@ -51,6 +73,11 @@ public class Parser {
 	    return parseVariableAssignment();
 	}
 
+	/**
+	 * Parses a method call expression.
+	 * @return Parsed MethodCall expression.
+	 * @throws UnexpectedTokenException
+	 */
 	private MethodCall parseMethodCall() throws UnexpectedTokenException {
 	    var name = ts.expect(TokenType.IDENTIFIER);
 		
@@ -69,7 +96,11 @@ public class Parser {
 	    return new MethodCall(name.getValue(), args);
 	}
 	
-
+	/**
+	 * Parses an if statement.
+	 * @return Parsed IfStatement.
+	 * @throws UnexpectedTokenException
+	 */
 	private IfStatement parseIf() throws UnexpectedTokenException {
 		ts.expect(TokenType.IF);
 		ts.expect(TokenType.LPAREN);
@@ -82,6 +113,11 @@ public class Parser {
 		return new IfStatement(condition, thenBranch);
 	}
 
+	/**
+	 * Parses a while statement.
+	 * @return Parsed WhileStatement.
+	 * @throws UnexpectedTokenException
+	 */
 	private WhileStatement parseWhile() throws UnexpectedTokenException {
 		ts.expect(TokenType.WHILE);
 		ts.expect(TokenType.LPAREN);
@@ -95,6 +131,11 @@ public class Parser {
 		return new WhileStatement(condition, body);
 	}
 
+	/**
+	 * Parses a return statement.
+	 * @return Parsed ReturnStatement.
+	 * @throws UnexpectedTokenException
+	 */
 	private ReturnStatement parseReturn() throws UnexpectedTokenException {
 	    ts.expect(TokenType.RETURN);
 	    ts.expect(TokenType.SEMICOLON);
@@ -102,6 +143,11 @@ public class Parser {
 	    return new ReturnStatement();
 	}
 
+	/**
+	 * Parses a method declaration.
+	 * @return Parsed MethodDeclaration.
+	 * @throws UnexpectedTokenException
+	 */
 	private MethodDeclaration parseMethodDeclaration() throws UnexpectedTokenException {
 		ts.expect(TokenType.VOID);
 		var name = ts.expect(TokenType.IDENTIFIER);
@@ -112,6 +158,11 @@ public class Parser {
 		return new MethodDeclaration(name.getValue(), arguments, body);
 	}
 
+	/**
+	 * Parses a variable assignment statement.
+	 * @return Parsed VariableAssignment.
+	 * @throws UnexpectedTokenException
+	 */
 	private VariableAssignment parseVariableAssignment() throws UnexpectedTokenException {
 	    var name = ts.expect(TokenType.IDENTIFIER);
 	    ts.expect(TokenType.ASSIGN);
@@ -123,6 +174,11 @@ public class Parser {
 	    return new VariableAssignment(name.getValue(), value);
 	}
 
+	/**
+	 * Parses a block of statements enclosed in braces.
+	 * @return Parsed Block.
+	 * @throws UnexpectedTokenException
+	 */
 	private Block parseBlock() throws UnexpectedTokenException {
 	ts.expect(TokenType.LBRACE);
 	consumeNewlines();   
@@ -135,6 +191,11 @@ public class Parser {
 	return new Block(statements);
 	}
 
+	/**
+	 * Parses variable declarations.
+	 * @return List of parsed VariableDeclaration statements.
+	 * @throws UnexpectedTokenException
+	 */
 	private List<Statement> parseVariableDeclarations() throws UnexpectedTokenException {
 	   boolean isFinal = ts.match(TokenType.FINAL);
 
@@ -168,6 +229,11 @@ public class Parser {
 	}
 
 
+	/**
+	 * Parses an expression.
+	 * @return Parsed Expression.
+	 * @throws UnexpectedTokenException
+	 */
 	private Expression parseExpression() throws UnexpectedTokenException {
 		var t = ts.peek();
 
@@ -181,6 +247,11 @@ public class Parser {
 		};
 	}
 
+	/**
+	 * Parses a condition expression.
+	 * @return Parsed Expression.
+	 * @throws UnexpectedTokenException
+	 */
 	private Expression parseCondition() throws UnexpectedTokenException {
     	Expression left = parseConditionAtom();
 
@@ -198,6 +269,11 @@ public class Parser {
     	return left;
 	}
 
+	/**
+	 * Parses a condition atom.
+	 * @return Parsed Expression.
+	 * @throws UnexpectedTokenException
+	 */
 	private Expression parseConditionAtom() throws UnexpectedTokenException {
 	    Token t = ts.peek();
 
@@ -212,7 +288,11 @@ public class Parser {
 	    };
 	}
 
-
+	/**
+	 * Parses method arguments.
+	 * @return List of parsed MethodArgument.
+	 * @throws UnexpectedTokenException
+	 */
 	private List<MethodArgument> parseMethodArguments() throws UnexpectedTokenException {
 	    var arguments = new ArrayList<MethodArgument>();
 	    ts.expect(TokenType.LPAREN);
@@ -243,13 +323,19 @@ public class Parser {
 	    return arguments;
 	}
 
-
+	/**
+	 * Consumes all consecutive NEWLINE tokens.
+	 */
 	private void consumeNewlines() {
 	    while (ts.match(TokenType.NEWLINE)) {
 	        // keep consuming
 	    }
 	}
 
+	/**
+	 * Expects at least one NEWLINE token.
+	 * @throws UnexpectedTokenException if no NEWLINE is found.
+	 */
 	private void expectNewline() throws UnexpectedTokenException {
 	    if (!ts.match(TokenType.NEWLINE)) {
 	        throw new UnexpectedTokenException("Expected newline");
