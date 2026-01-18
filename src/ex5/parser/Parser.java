@@ -128,6 +128,12 @@ public class Parser {
 		ts.expect(TokenType.VOID);
 		var identifier = ts.expect(TokenType.IDENTIFIER);
 
+		if (identifier.getValue().startsWith("_")) {
+			throw new UnexpectedTokenException(
+					"Method names cannot start with underscore: " + identifier.getValue()
+			);
+		}
+
 		ts.expect(TokenType.LPAREN);
 		var arguments = parseMethodArguments();
 		ts.expect(TokenType.RPAREN);
