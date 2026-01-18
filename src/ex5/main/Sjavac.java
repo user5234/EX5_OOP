@@ -22,10 +22,10 @@ public class Sjavac {
 	 * Main method to run the Sjavac compiler.
 	 *
 	 * @param args Command line arguments; expects a single argument which is the path to the
-	 *                .sjava file.
+	 *             .sjava file.
 	 */
 	public static void main(String[] args) {
-		if (args.length != 1) {
+		if (args.length != 1 || !args[0].endsWith(".sjava")) {
 			System.err.println("Usage: Sjavac <file.sjava>");
 			System.out.println(2);
 			return;
