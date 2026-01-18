@@ -25,7 +25,7 @@ public enum TokenType {
 	CHAR("char"),
 
 	// Literals
-	DOUBLE_LITERAL("[+-]?(\\d+(\\.\\d*)?|\\.\\d+)"),
+	DOUBLE_LITERAL("[+-]?(\\d*\\.\\d+|\\d+\\.\\d*)"),
 	INT_LITERAL("[+-]?\\d+"),
 	STRING_LITERAL("\"[^\"]*\""),
 	BOOLEAN_LITERAL("(true|false)"),

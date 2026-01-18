@@ -3,7 +3,7 @@ noam_wein,galart27
 
 The two main regex's we used in this project are:
 "[A-Za-z_][A-Za-z0-9_]*" for identifiers
-"[+-]?(\\d+(\\.\\d*)?|\\.\\d+)" for doubles
+"[+-]?(\d*\.\d+|\d+\.\d*)" for doubles
 
 The structure of the identifier regex is as follows:
 1. [A-Za-z_] - The first character must be a letter (uppercase or lowercase) or an underscore.
@@ -12,10 +12,10 @@ The asterisk (*) indicates that there can be zero or more of these characters.
 
 The structure of the double regex is as follows:
 1. [+-]? - The number can optionally start with a plus (+) or minus (-) sign.
-2. (\\d+(\\.\\d*)?|\\.\\d+) - This part matches the numeric portion of the double:
-   - \\d+ matches one or more digits before the decimal point.
-   - (\\.\\d*)? matches an optional decimal point followed by zero or more digits.
-   - |\\.\\d+ allows for numbers that start with a decimal point followed by one or more digits.
+2. (\d*\.\d+|\d+\.\d*) - This part matches the decimal portion of the number:
+   - \d*\.\d+ - This matches numbers with digits optionally before and required after the decimal point.
+   - | - This is the OR operator, indicating that either the left or right side can match.
+   - \d+\.\d* - This matches numbers with digits required before the decimal point and optionally after.
 
 
 The design of the project:
