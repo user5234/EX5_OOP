@@ -36,7 +36,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	 * @param statements The list of statements to analyze.
 	 */
 	public void analyze(List<Statement> statements) {
-		// Pass 1: collect/define all methods (signatures only)
+		// Collect method declarations first
 		for (var s : statements) {
 			if (s instanceof MethodDeclaration md) {
 				deferredMethods.add(md);
@@ -47,7 +47,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 			}
 		}
 
-		// Pass 2: analyze method bodies
+		// Now analyze method bodies
 		for (var md : deferredMethods) {
 			md.accept(this);
 		}
@@ -108,9 +108,9 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 			                            " cannot be declared inside another method");
 		}
 
-		var outerScope = currentScope;
+		var scope = currentScope;
 
-		currentScope = new Scope(null);
+		currentScope = new Scope(scope);
 		for (var param : md.getArguments()) {
 			param.accept(this);
 		}
@@ -125,8 +125,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 			                            " must end with a return statement");
 		}
 
-		currentScope = outerScope;
-
+		currentScope = scope;
 	}
 
 	/**
@@ -168,14 +167,9 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	 */
 	@Override
 	public void visitVariableDeclaration(VariableDeclaration vs) {
-		// NEW: forbid shadowing any existing symbol (including parameters)
-		if (currentScope.isDefinedInAnyScope(vs.getIdentifier())) {
-			throw new SemanticException("Variable already declared: " + vs.getIdentifier());
-		}
+		boolean isInitialized = vs.getInitializer() != null;
 
-		boolean initd = (vs.getInitializer() != null);
-
-		if (initd) {
+		if (isInitialized) {
 			var initType = vs.getInitializer().accept(this);
 			if (!isAssignable(vs.getType(), initType)) {
 				throw new SemanticException("Type mismatch: cannot assign " +
@@ -183,7 +177,9 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 			}
 		}
 
-		currentScope.define(new Symbol(vs.getIdentifier(), vs.getType(), vs.isFinal(), initd));
+		currentScope.define(
+				new Symbol(vs.getIdentifier(), vs.getType(), vs.isFinal(), isInitialized)
+		);
 	}
 
 	/**
@@ -327,10 +323,8 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 		// numeric promotion
 		if (target == TokenType.DOUBLE && source == TokenType.INT) return true;
 
-		// your rule: boolean can accept int/double
-		if (target == TokenType.BOOLEAN && (source == TokenType.INT || source == TokenType.DOUBLE))
-			return true;
-
-		return false;
+		// boolean can accept int/double
+		return target == TokenType.BOOLEAN &&
+		       (source == TokenType.INT || source == TokenType.DOUBLE);
 	}
 }

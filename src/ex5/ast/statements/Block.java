@@ -31,8 +31,8 @@ public class Block extends Statement {
 
 	/**
 	 * Accepts a visitor to process this block.
+	 *
 	 * @param visitor the AST visitor
-	 * @return the result of the visitor's processing
 	 */
 	@Override
 	public <R> void accept(ASTVisitor<R> visitor) {

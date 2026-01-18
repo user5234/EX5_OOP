@@ -34,20 +34,21 @@ public class Scope {
 	}
 
 	/**
-	 * Resolves a variable symbol by its name, searching in the current scope and parent scopes.
+	 * Resolves a variable symbol by its identifier, searching in the current scope and parent
+	 * scopes.
 	 *
-	 * @param name The name of the variable to resolve.
+	 * @param identifier The identifier of the variable to resolve.
 	 * @return The corresponding Symbol.
 	 * @throws SemanticException If the variable is not defined in any accessible scope.
 	 */
-	public Symbol resolve(String name) {
-		if (symbols.containsKey(name)) {
-			return symbols.get(name);
+	public Symbol resolve(String identifier) {
+		if (symbols.containsKey(identifier)) {
+			return symbols.get(identifier);
 		}
 		if (parent != null) {
-			return parent.resolve(name);
+			return parent.resolve(identifier);
 		}
-		throw new SemanticException("Undefined variable: " + name);
+		throw new SemanticException("Undefined variable: " + identifier);
 	}
 
 	/**
@@ -57,16 +58,5 @@ public class Scope {
 	 */
 	public boolean hasParent() {
 		return parent != null;
-	}
-
-	/**
-	 * Checks if a symbol is defined in the current scope or any parent scopes.
-	 *
-	 * @param name The name of the symbol to check.
-	 * @return True if the symbol is defined, false otherwise.
-	 */
-	public boolean isDefinedInAnyScope(String name) {
-	    if (symbols.containsKey(name)) return true;
-	    return parent != null && parent.isDefinedInAnyScope(name);
 	}
 }
