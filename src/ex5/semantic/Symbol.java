@@ -13,7 +13,6 @@ public class Symbol {
 	private final String identifier;
 	private final TokenType type;
 	private final boolean isFinal;
-	private boolean initialized;
 
 	/**
 	 * Constructs a Symbol with the given properties.
@@ -21,13 +20,11 @@ public class Symbol {
 	 * @param identifier  The name of the symbol.
 	 * @param type        The type of the symbol.
 	 * @param isFinal     Whether the symbol is final.
-	 * @param initialized Whether the symbol is initialized.
 	 */
-	public Symbol(String identifier, TokenType type, boolean isFinal, boolean initialized) {
+	public Symbol(String identifier, TokenType type, boolean isFinal) {
 		this.identifier = identifier;
 		this.type = type;
 		this.isFinal = isFinal;
-		this.initialized = initialized;
 	}
 
 	/**
@@ -38,7 +35,7 @@ public class Symbol {
 	 * @param type       The type of the symbol.
 	 */
 	public Symbol(String identifier, TokenType type) {
-		this(identifier, type, false, false);
+		this(identifier, type, false);
 	}
 
 	/**
@@ -57,24 +54,6 @@ public class Symbol {
 	 */
 	public TokenType getType() {
 		return type;
-	}
-
-	/**
-	 * Checks if the symbol is initialized.
-	 *
-	 * @return True if initialized, false otherwise.
-	 */
-	public boolean isInitialized() {
-		return initialized;
-	}
-
-	/**
-	 * Sets the initialized status of the symbol.
-	 *
-	 * @param initialized The new initialized status.
-	 */
-	public void setInitialized(boolean initialized) {
-		this.initialized = initialized;
 	}
 
 	/**

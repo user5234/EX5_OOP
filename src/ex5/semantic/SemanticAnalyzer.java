@@ -22,7 +22,6 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 	private final MethodTable methodTable;
 	private final List<MethodDeclaration> deferredMethods;
-	private final Scope globalScope;
 	private Scope currentScope;
 
 	/**
@@ -31,8 +30,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	public SemanticAnalyzer() {
 		methodTable = new MethodTable();
 		deferredMethods = new ArrayList<>();
-		globalScope = new Scope(null);
-		currentScope = globalScope;
+		currentScope = new Scope(null);
 	}
 
 	/**
@@ -97,7 +95,8 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	 */
 	@Override
 	public void visitMethodArgument(MethodArgument ma) {
-		currentScope.define(new Symbol(ma.getIdentifier(), ma.getType(), false, true));
+		currentScope.define(new Symbol(ma.getIdentifier(), ma.getType(), false));
+		currentScope.setInitialized(ma.getIdentifier(), true);
 	}
 
 	/**
@@ -151,7 +150,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 		var symbol = currentScope.resolve(va.getIdentifier());
 
 		// final rule: cannot change after initialized
-		if (symbol.isFinal() && symbol.isInitialized()) {
+		if (symbol.isFinal() && currentScope.isInitialized(va.getIdentifier())) {
 			throw new SemanticException("Cannot assign to final variable: " + va.getIdentifier());
 		}
 
@@ -162,7 +161,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 			                            exprType + " to " + symbol.getType());
 		}
 
-		symbol.setInitialized(true);
+		currentScope.setInitialized(va.getIdentifier(), true);
 	}
 
 	/**
@@ -183,8 +182,9 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 		}
 
 		currentScope.define(
-				new Symbol(vs.getIdentifier(), vs.getType(), vs.isFinal(), isInitialized)
+				new Symbol(vs.getIdentifier(), vs.getType(), vs.isFinal())
 		);
+		currentScope.setInitialized(vs.getIdentifier(), isInitialized);
 	}
 
 	/**
@@ -221,7 +221,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	@Override
 	public TokenType visitVariableExpression(VariableExpression ve) {
 		var sym = currentScope.resolve(ve.getIdentifier());
-		if (!sym.isInitialized()) {
+		if (!currentScope.isInitialized(ve.getIdentifier())) {
 			throw new SemanticException("Variable " +
 			                            ve.getIdentifier() +
 			                            " used before initialization");

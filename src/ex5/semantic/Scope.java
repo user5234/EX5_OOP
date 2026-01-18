@@ -9,6 +9,7 @@ import java.util.Map;
 public class Scope {
 
 	private final Map<String, Symbol> symbols = new HashMap<>();
+	private final Map<String, Boolean> initialized = new HashMap<>();
 	private final Scope parent;
 
 	/**
@@ -47,6 +48,28 @@ public class Scope {
 		}
 		if (parent != null) {
 			return parent.resolve(identifier);
+		}
+		throw new SemanticException("Undefined variable: " + identifier);
+	}
+
+	public void setInitialized(String identifier, boolean isInitialized) {
+		if (symbols.containsKey(identifier)) {
+			initialized.put(identifier, isInitialized);
+			return;
+		}
+		if (parent != null) {
+			parent.setInitialized(identifier, isInitialized);
+			return;
+		}
+		throw new SemanticException("Undefined variable: " + identifier);
+	}
+
+	public boolean isInitialized(String identifier) {
+		if (initialized.containsKey(identifier)) {
+			return initialized.get(identifier);
+		}
+		if (parent != null) {
+			return parent.isInitialized(identifier);
 		}
 		throw new SemanticException("Undefined variable: " + identifier);
 	}
