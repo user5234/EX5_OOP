@@ -1,0 +1,353 @@
+@startuml
+skinparam classAttributeIconSize 0
+hide empty members
+package ex5.ast {
+class "ASTNode" as T_ex5_ast_ASTNode {
+  + print() : String
+}
+}
+package ex5.ast.expressions {
+class "Expression" as T_ex5_ast_expressions_Expression {
+}
+class "LiteralExpression" as T_ex5_ast_expressions_LiteralExpression {
+  - literal : Token
+  ~ literal : return
+  + LiteralExpression(literal : Token)
+  + getLiteral() : Token
+  + print() : String
+}
+class "LogicalExpression" as T_ex5_ast_expressions_LogicalExpression {
+  - left : Expression
+  - op : TokenType
+  - right : Expression
+  + LogicalExpression(left : Expression, op : TokenType, right : Expression)
+  + getLeft() : Expression
+  + getOp() : TokenType
+  + getRight() : Expression
+  + print() : String
+}
+class "MethodCall" as T_ex5_ast_expressions_MethodCall {
+  - identifier : String
+  - arguments : List
+  ~ identifier : return
+  ~ arguments : return
+  ~ argsPrint : StringBuilder
+  + MethodCall(methodName : String, arguments : List)
+  + getIdentifier() : String
+  + getArguments() : List
+  + print() : String
+}
+class "VariableExpression" as T_ex5_ast_expressions_VariableExpression {
+  - identifier : String
+  ~ identifier : return
+  ~ identifier : return
+  + VariableExpression(identifier : String)
+  + getIdentifier() : String
+  + print() : String
+}
+}
+package ex5.ast.statements {
+class "Block" as T_ex5_ast_statements_Block {
+  - statements : List
+  ~ statements : return
+  ~ sb : var
+  + Block(statements : List)
+  + getStatements() : List
+  + print() : String
+}
+class "IfStatement" as T_ex5_ast_statements_IfStatement {
+  - condition : Expression
+  - body : Block
+  ~ condition : return
+  ~ body : return
+  + IfStatement(condition : Expression, body : Block)
+  + getCondition() : Expression
+  + getBody() : Block
+  + print() : String
+}
+class "MethodArgument" as T_ex5_ast_statements_MethodArgument {
+  - type : TokenType
+  - identifier : String
+  ~ type : return
+  ~ identifier : return
+  + MethodArgument(type : TokenType, identifier : String)
+  + getType() : TokenType
+  + getIdentifier() : String
+  + print() : String
+}
+class "MethodCallStatement" as T_ex5_ast_statements_MethodCallStatement {
+  - call : MethodCall
+  ~ call : return
+  + MethodCallStatement(call : MethodCall)
+  + getCall() : MethodCall
+  + print() : String
+}
+class "MethodDeclaration" as T_ex5_ast_statements_MethodDeclaration {
+  - identifier : String
+  - arguments : List
+  - body : Block
+  ~ identifier : return
+  ~ arguments : return
+  ~ body : return
+  ~ args : var
+  + MethodDeclaration(identifier : String, arguments : List, body : Block)
+  + getIdentifier() : String
+  + getArguments() : List
+  + getBody() : Block
+  + print() : String
+}
+class "ReturnStatement" as T_ex5_ast_statements_ReturnStatement {
+  + print() : String
+}
+class "Statement" as T_ex5_ast_statements_Statement {
+}
+class "VariableAssignment" as T_ex5_ast_statements_VariableAssignment {
+  - identifier : String
+  - expression : Expression
+  ~ identifier : return
+  ~ expression : return
+  + VariableAssignment(identifier : String, expression : Expression)
+  + getIdentifier() : String
+  + getExpression() : Expression
+  + print() : String
+}
+class "VariableDeclaration" as T_ex5_ast_statements_VariableDeclaration {
+  - type : TokenType
+  - identifier : String
+  - initializer : Expression
+  - isFinal : boolean
+  ~ type : return
+  ~ identifier : return
+  ~ initializer : return
+  ~ isFinal : return
+  ~ f : String
+  + VariableDeclaration(type : TokenType, identifier : String, initializer : Expression, isFinal : boolean)
+  + getType() : TokenType
+  + getIdentifier() : String
+  + getInitializer() : Expression
+  + isFinal() : boolean
+  + print() : String
+}
+class "WhileStatement" as T_ex5_ast_statements_WhileStatement {
+  - condition : Expression
+  - body : Block
+  ~ condition : return
+  ~ body : return
+  + WhileStatement(condition : Expression, body : Block)
+  + getCondition() : Expression
+  + getBody() : Block
+  + print() : String
+}
+}
+package ex5.lexer {
+class "Lexer" as T_ex5_lexer_Lexer {
+  - pos : int
+  ~ tokens : var
+  ~ commentIdx : int
+  ~ remaining : var
+  ~ token : var
+  ~ tokens : return
+  ~ matcher : var
+  ~ value : var
+  ~ token : var
+  + Lexer()
+  + tokenize(line : String) : List
+  - currentToken(input : String) : Token
+  - skipWhitespace(line : String) : void
+}
+class "Token" as T_ex5_lexer_Token {
+  - type : TokenType
+  - value : String
+  ~ type : return
+  ~ value : return
+  + Token(type : TokenType, value : String)
+  + getType() : TokenType
+  + getValue() : String
+}
+enum "TokenType" as T_ex5_lexer_TokenType {
+  - pattern : Pattern
+  ~ pattern : return
+  ~ TokenType(regex : String)
+  + getPattern() : Pattern
+}
+class "UnknownTokenException" as T_ex5_lexer_UnknownTokenException {
+  + UnknownTokenException(message : String)
+}
+}
+package ex5.main {
+class "Sjavac" as T_ex5_main_Sjavac {
+  ~ lexer : var
+  ~ tokens : var
+  ~ line : var
+  ~ statements : var
+  + main(args : String[]) : void
+  ~ SemanticAnalyzer() : new
+}
+}
+package ex5.parser {
+class "Parser" as T_ex5_parser_Parser {
+  - ts : TokenStream
+  ~ statements : List
+  ~ statements : return
+  ~ type : TokenType
+  ~ call : var
+  ~ name : var
+  ~ args : var
+  ~ condition : var
+  ~ thenBranch : var
+  ~ condition : var
+  ~ body : var
+  ~ name : var
+  ~ arguments : var
+  ~ body : var
+  ~ name : var
+  ~ value : var
+  ~ statements : var
+  ~ isFinal : boolean
+  ~ type : TokenType
+  ~ decls : var
+  ~ nameTok : var
+  ~ init : Expression
+  ~ decls : return
+  ~ t : var
+  ~ left : Expression
+  ~ right : Expression
+  ~ right : Expression
+  ~ left : return
+  ~ t : Token
+  ~ arguments : var
+  ~ arguments : return
+  ~ type : var
+  ~ name : var
+  ~ arguments : return
+  + Parser(tokens : List)
+  + parseProgram() : List
+  - parseStatement() : List
+  ~ switch(arg : type) : return
+  - parseIdentifierStartingStatement() : Statement
+  ~ parseVariableAssignment() : return
+  - parseMethodCall() : MethodCall
+  - parseIf() : IfStatement
+  - parseWhile() : WhileStatement
+  - parseReturn() : ReturnStatement
+  - parseMethodDeclaration() : MethodDeclaration
+  - parseVariableAssignment() : VariableAssignment
+  - parseBlock() : Block
+  - parseVariableDeclarations() : List
+  - parseExpression() : Expression
+  ~ switch(arg : getType() : return
+  ~ LiteralExpression(arg : consume() : new
+  - parseCondition() : Expression
+  - parseConditionAtom() : Expression
+  ~ switch(arg : getType() : return
+  ~ LiteralExpression(arg : consume() : new
+  ~ VariableExpression(arg : consume() : new
+  - parseMethodArguments() : List
+  - consumeNewlines() : void
+  - expectNewline() : void
+}
+class "TokenStream" as T_ex5_parser_TokenStream {
+  - tokens : List
+  - pos : int
+  ~ idx : int
+  ~ true : return
+  ~ false : return
+  ~ t : var
+  ~ t : return
+  + TokenStream(tokens : List)
+  + peek() : Token
+  + peek(k : int) : Token
+  + isAtEnd() : boolean
+  + consume() : Token
+  + match(type : TokenType) : boolean
+  + expect(type : TokenType) : Token
+}
+class "UnexpectedTokenException" as T_ex5_parser_UnexpectedTokenException {
+  + UnexpectedTokenException(message : String)
+}
+}
+package ex5.semantic {
+class "MethodSymbol" as T_ex5_semantic_MethodSymbol {
+  - identifier : String
+  - parameters : List
+  ~ identifier : return
+  ~ parameters : return
+  + MethodSymbol(identifier : String, parameters : List)
+  + getIdentifier() : String
+  + getParameters() : List
+}
+class "MethodTable" as T_ex5_semantic_MethodTable {
+  - methods : Map
+  + define(method : MethodSymbol) : void
+  + resolve(name : String) : MethodSymbol
+}
+class "Scope" as T_ex5_semantic_Scope {
+  - symbols : Map
+  - parent : Scope
+  + Scope(parent : Scope)
+  + define(symbol : Symbol) : void
+  + resolve(name : String) : Symbol
+  + hasParent() : boolean
+  + isDefinedInAnyScope(name : String) : boolean
+}
+class "SemanticException" as T_ex5_semantic_SemanticException {
+  + SemanticException(message : String)
+}
+class "Symbol" as T_ex5_semantic_Symbol {
+  - identifier : String
+  - type : TokenType
+  - isFinal : boolean
+  - initialized : boolean
+  ~ identifier : return
+  ~ type : return
+  ~ initialized : return
+  ~ isFinal : return
+  + Symbol(identifier : String, type : TokenType, isFinal : boolean, initialized : boolean)
+  + Symbol(identifier : String, type : TokenType)
+  + getIdentifier() : String
+  + getType() : TokenType
+  + isInitialized() : boolean
+  + setInitialized(initialized : boolean) : void
+  + isFinal() : boolean
+}
+}
+T_ex5_ast_ASTNode <|-- T_ex5_ast_expressions_Expression
+T_ex5_ast_expressions_Expression <|-- T_ex5_ast_expressions_LiteralExpression
+T_ex5_ast_expressions_Expression <|-- T_ex5_ast_expressions_LogicalExpression
+T_ex5_ast_expressions_Expression <|-- T_ex5_ast_expressions_MethodCall
+T_ex5_ast_expressions_Expression <|-- T_ex5_ast_expressions_VariableExpression
+T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_Block
+T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_IfStatement
+T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_MethodArgument
+T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_MethodCallStatement
+T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_MethodDeclaration
+T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_ReturnStatement
+T_ex5_ast_ASTNode <|-- T_ex5_ast_statements_Statement
+T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_VariableAssignment
+T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_VariableDeclaration
+T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_WhileStatement
+T_ex5_ast_expressions_LiteralExpression --> T_ex5_lexer_Token
+T_ex5_ast_expressions_LogicalExpression --> T_ex5_ast_expressions_Expression
+T_ex5_ast_expressions_LogicalExpression --> T_ex5_lexer_TokenType
+T_ex5_ast_expressions_LogicalExpression --> T_ex5_ast_expressions_Expression
+T_ex5_ast_statements_IfStatement --> T_ex5_ast_expressions_Expression
+T_ex5_ast_statements_IfStatement --> T_ex5_ast_statements_Block
+T_ex5_ast_statements_MethodArgument --> T_ex5_lexer_TokenType
+T_ex5_ast_statements_MethodCallStatement --> T_ex5_ast_expressions_MethodCall
+T_ex5_ast_statements_MethodDeclaration --> T_ex5_ast_statements_Block
+T_ex5_ast_statements_VariableAssignment --> T_ex5_ast_expressions_Expression
+T_ex5_ast_statements_VariableDeclaration --> T_ex5_lexer_TokenType
+T_ex5_ast_statements_VariableDeclaration --> T_ex5_ast_expressions_Expression
+T_ex5_ast_statements_WhileStatement --> T_ex5_ast_expressions_Expression
+T_ex5_ast_statements_WhileStatement --> T_ex5_ast_statements_Block
+T_ex5_lexer_Token --> T_ex5_lexer_TokenType
+T_ex5_parser_Parser --> T_ex5_parser_TokenStream
+T_ex5_parser_Parser --> T_ex5_lexer_TokenType
+T_ex5_parser_Parser --> T_ex5_lexer_TokenType
+T_ex5_parser_Parser --> T_ex5_ast_expressions_Expression
+T_ex5_parser_Parser --> T_ex5_ast_expressions_Expression
+T_ex5_parser_Parser --> T_ex5_ast_expressions_Expression
+T_ex5_parser_Parser --> T_ex5_ast_expressions_Expression
+T_ex5_parser_Parser --> T_ex5_lexer_Token
+T_ex5_semantic_Symbol --> T_ex5_lexer_TokenType
+@enduml
