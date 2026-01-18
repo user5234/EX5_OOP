@@ -26,17 +26,6 @@ class "LogicalExpression" as T_ex5_ast_expressions_LogicalExpression {
   + getRight() : Expression
   + print() : String
 }
-class "MethodCall" as T_ex5_ast_expressions_MethodCall {
-  - identifier : String
-  - arguments : List
-  ~ identifier : return
-  ~ arguments : return
-  ~ argsPrint : StringBuilder
-  + MethodCall(methodName : String, arguments : List)
-  + getIdentifier() : String
-  + getArguments() : List
-  + print() : String
-}
 class "VariableExpression" as T_ex5_ast_expressions_VariableExpression {
   - identifier : String
   ~ identifier : return
@@ -75,11 +64,15 @@ class "MethodArgument" as T_ex5_ast_statements_MethodArgument {
   + getIdentifier() : String
   + print() : String
 }
-class "MethodCallStatement" as T_ex5_ast_statements_MethodCallStatement {
-  - call : MethodCall
-  ~ call : return
-  + MethodCallStatement(call : MethodCall)
-  + getCall() : MethodCall
+class "MethodCall" as T_ex5_ast_statements_MethodCall {
+  - identifier : String
+  - arguments : List
+  ~ identifier : return
+  ~ arguments : return
+  ~ argsPrint : var
+  + MethodCall(methodName : String, arguments : List)
+  + getIdentifier() : String
+  + getArguments() : List
   + print() : String
 }
 class "MethodDeclaration" as T_ex5_ast_statements_MethodDeclaration {
@@ -120,7 +113,7 @@ class "VariableDeclaration" as T_ex5_ast_statements_VariableDeclaration {
   ~ identifier : return
   ~ initializer : return
   ~ isFinal : return
-  ~ f : String
+  ~ f : var
   + VariableDeclaration(type : TokenType, identifier : String, initializer : Expression, isFinal : boolean)
   + getType() : TokenType
   + getIdentifier() : String
@@ -143,7 +136,6 @@ package ex5.lexer {
 class "Lexer" as T_ex5_lexer_Lexer {
   - pos : int
   ~ tokens : var
-  ~ commentIdx : int
   ~ remaining : var
   ~ token : var
   ~ tokens : return
@@ -187,34 +179,35 @@ class "Sjavac" as T_ex5_main_Sjavac {
 package ex5.parser {
 class "Parser" as T_ex5_parser_Parser {
   - ts : TokenStream
-  ~ statements : List
+  ~ statements : var
   ~ statements : return
-  ~ type : TokenType
-  ~ call : var
+  ~ type : var
   ~ name : var
   ~ args : var
   ~ condition : var
-  ~ thenBranch : var
+  ~ body : var
   ~ condition : var
   ~ body : var
-  ~ name : var
+  ~ identifier : var
   ~ arguments : var
   ~ body : var
-  ~ name : var
+  ~ assignments : var
+  ~ identifier : var
   ~ value : var
+  ~ assignments : return
   ~ statements : var
   ~ isFinal : boolean
-  ~ type : TokenType
-  ~ decls : var
-  ~ nameTok : var
-  ~ init : Expression
-  ~ decls : return
+  ~ type : var
+  ~ declarations : var
+  ~ identifier : var
+  ~ initializer : var
+  ~ declarations : return
   ~ t : var
-  ~ left : Expression
-  ~ right : Expression
-  ~ right : Expression
+  ~ left : var
+  ~ right : var
+  ~ right : var
   ~ left : return
-  ~ t : Token
+  ~ t : var
   ~ arguments : var
   ~ arguments : return
   ~ type : var
@@ -224,27 +217,24 @@ class "Parser" as T_ex5_parser_Parser {
   + parseProgram() : List
   - parseStatement() : List
   ~ switch(arg : type) : return
-  - parseIdentifierStartingStatement() : Statement
-  ~ parseVariableAssignment() : return
   - parseMethodCall() : MethodCall
   - parseIf() : IfStatement
   - parseWhile() : WhileStatement
   - parseReturn() : ReturnStatement
   - parseMethodDeclaration() : MethodDeclaration
-  - parseVariableAssignment() : VariableAssignment
+  - parseVariableAssignments() : List
   - parseBlock() : Block
   - parseVariableDeclarations() : List
+  ~ VariableDeclaration(arg : type, arg : getValue() : new
   - parseExpression() : Expression
   ~ switch(arg : getType() : return
   ~ LiteralExpression(arg : consume() : new
   - parseCondition() : Expression
+  ~ if(arg : OR) : else
   - parseConditionAtom() : Expression
   ~ switch(arg : getType() : return
   ~ LiteralExpression(arg : consume() : new
-  ~ VariableExpression(arg : consume() : new
   - parseMethodArguments() : List
-  - consumeNewlines() : void
-  - expectNewline() : void
 }
 class "TokenStream" as T_ex5_parser_TokenStream {
   - tokens : List
@@ -283,12 +273,17 @@ class "MethodTable" as T_ex5_semantic_MethodTable {
 }
 class "Scope" as T_ex5_semantic_Scope {
   - symbols : Map
+  - initialized : Map
   - parent : Scope
+  ~ newScope : var
+  ~ newScope : return
   + Scope(parent : Scope)
+  + copy() : Scope
   + define(symbol : Symbol) : void
-  + resolve(name : String) : Symbol
+  + resolve(identifier : String) : Symbol
+  + setInitialized(identifier : String, isInitialized : boolean) : void
+  + isInitialized(identifier : String) : boolean
   + hasParent() : boolean
-  + isDefinedInAnyScope(name : String) : boolean
 }
 class "SemanticException" as T_ex5_semantic_SemanticException {
   + SemanticException(message : String)
@@ -297,29 +292,24 @@ class "Symbol" as T_ex5_semantic_Symbol {
   - identifier : String
   - type : TokenType
   - isFinal : boolean
-  - initialized : boolean
   ~ identifier : return
   ~ type : return
-  ~ initialized : return
   ~ isFinal : return
-  + Symbol(identifier : String, type : TokenType, isFinal : boolean, initialized : boolean)
+  + Symbol(identifier : String, type : TokenType, isFinal : boolean)
   + Symbol(identifier : String, type : TokenType)
   + getIdentifier() : String
   + getType() : TokenType
-  + isInitialized() : boolean
-  + setInitialized(initialized : boolean) : void
   + isFinal() : boolean
 }
 }
 T_ex5_ast_ASTNode <|-- T_ex5_ast_expressions_Expression
 T_ex5_ast_expressions_Expression <|-- T_ex5_ast_expressions_LiteralExpression
 T_ex5_ast_expressions_Expression <|-- T_ex5_ast_expressions_LogicalExpression
-T_ex5_ast_expressions_Expression <|-- T_ex5_ast_expressions_MethodCall
 T_ex5_ast_expressions_Expression <|-- T_ex5_ast_expressions_VariableExpression
 T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_Block
 T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_IfStatement
 T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_MethodArgument
-T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_MethodCallStatement
+T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_MethodCall
 T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_MethodDeclaration
 T_ex5_ast_statements_Statement <|-- T_ex5_ast_statements_ReturnStatement
 T_ex5_ast_ASTNode <|-- T_ex5_ast_statements_Statement
@@ -333,7 +323,6 @@ T_ex5_ast_expressions_LogicalExpression --> T_ex5_ast_expressions_Expression
 T_ex5_ast_statements_IfStatement --> T_ex5_ast_expressions_Expression
 T_ex5_ast_statements_IfStatement --> T_ex5_ast_statements_Block
 T_ex5_ast_statements_MethodArgument --> T_ex5_lexer_TokenType
-T_ex5_ast_statements_MethodCallStatement --> T_ex5_ast_expressions_MethodCall
 T_ex5_ast_statements_MethodDeclaration --> T_ex5_ast_statements_Block
 T_ex5_ast_statements_VariableAssignment --> T_ex5_ast_expressions_Expression
 T_ex5_ast_statements_VariableDeclaration --> T_ex5_lexer_TokenType
@@ -342,12 +331,5 @@ T_ex5_ast_statements_WhileStatement --> T_ex5_ast_expressions_Expression
 T_ex5_ast_statements_WhileStatement --> T_ex5_ast_statements_Block
 T_ex5_lexer_Token --> T_ex5_lexer_TokenType
 T_ex5_parser_Parser --> T_ex5_parser_TokenStream
-T_ex5_parser_Parser --> T_ex5_lexer_TokenType
-T_ex5_parser_Parser --> T_ex5_lexer_TokenType
-T_ex5_parser_Parser --> T_ex5_ast_expressions_Expression
-T_ex5_parser_Parser --> T_ex5_ast_expressions_Expression
-T_ex5_parser_Parser --> T_ex5_ast_expressions_Expression
-T_ex5_parser_Parser --> T_ex5_ast_expressions_Expression
-T_ex5_parser_Parser --> T_ex5_lexer_Token
 T_ex5_semantic_Symbol --> T_ex5_lexer_TokenType
 @enduml
