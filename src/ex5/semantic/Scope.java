@@ -5,6 +5,9 @@ import java.util.Map;
 
 /**
  * Represents a scope for variable symbols in the semantic analysis phase.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class Scope {
 
@@ -65,6 +68,13 @@ public class Scope {
 		throw new SemanticException("Undefined variable: " + identifier);
 	}
 
+	/**
+	 * Sets the initialization state of a variable in the current scope or parent scopes.
+	 *
+	 * @param identifier    The identifier of the variable.
+	 * @param isInitialized The initialization state to set.
+	 * @throws SemanticException If the variable is not defined in any accessible scope.
+	 */
 	public void setInitialized(String identifier, boolean isInitialized) {
 		if (symbols.containsKey(identifier)) {
 			initialized.put(identifier, isInitialized);
@@ -77,6 +87,13 @@ public class Scope {
 		throw new SemanticException("Undefined variable: " + identifier);
 	}
 
+	/**
+	 * Checks if a variable is initialized in the current scope or parent scopes.
+	 *
+	 * @param identifier The identifier of the variable to check.
+	 * @return True if the variable is initialized, false otherwise.
+	 * @throws SemanticException If the variable is not defined in any accessible scope.
+	 */
 	public boolean isInitialized(String identifier) {
 		if (initialized.containsKey(identifier)) {
 			return initialized.get(identifier);

@@ -15,6 +15,9 @@ import java.util.ArrayList;
 
 /**
  * Main class for the Sjavac compiler.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class Sjavac {
 

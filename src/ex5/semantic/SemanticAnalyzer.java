@@ -63,14 +63,9 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	 */
 	@Override
 	public void visitBlock(Block bl) {
-		var scope = currentScope;
-		currentScope = new Scope(scope);
-
 		for (var s : bl.getStatements()) {
 			s.accept(this);
 		}
-
-		currentScope = scope;
 	}
 
 	/**
@@ -89,7 +84,12 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 			throw new SemanticException("If condition must be boolean");
 		}
 
+		var scope = currentScope;
+		currentScope = new Scope(scope);
+
 		is.getBody().accept(this);
+
+		currentScope = scope;
 	}
 
 	/**
@@ -116,10 +116,12 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 			                            " cannot be declared inside another method");
 		}
 
+		// Copy so that initializations of global variables are not shared between methods
+		var globalScope = currentScope.copy();
 		var scope = currentScope;
 
-		// Copy so that initializations of global variables are not shared between methods
-		currentScope = new Scope(scope.copy());
+		currentScope = new Scope(globalScope);
+
 		for (var param : md.getArguments()) {
 			param.accept(this);
 		}
@@ -211,7 +213,12 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 			throw new SemanticException("While condition must be boolean");
 		}
 
+		var scope = currentScope;
+		currentScope = new Scope(scope);
+
 		ws.getBody().accept(this);
+
+		currentScope = scope;
 	}
 
 	// ───────── EXPRESSIONS ─────────
