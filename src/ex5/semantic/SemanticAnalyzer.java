@@ -80,6 +80,10 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	 */
 	@Override
 	public void visitIfStatement(IfStatement is) {
+		if (!currentScope.hasParent()) {
+			throw new SemanticException("If statement cannot be in the global scope");
+		}
+
 		var conditionType = is.getCondition().accept(this);
 		if (isConditionNotOperandType(conditionType)) {
 			throw new SemanticException("If condition must be boolean");
@@ -114,7 +118,8 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 		var scope = currentScope;
 
-		currentScope = new Scope(scope);
+		// Copy so that initializations of global variables are not shared between methods
+		currentScope = new Scope(scope.copy());
 		for (var param : md.getArguments()) {
 			param.accept(this);
 		}
@@ -138,7 +143,11 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	 * @param rs The return statement to visit.
 	 */
 	@Override
-	public void visitReturnStatement(ReturnStatement rs) {}
+	public void visitReturnStatement(ReturnStatement rs) {
+		if (!currentScope.hasParent()) {
+			throw new SemanticException("Return statement cannot be in the global scope");
+		}
+	}
 
 	/**
 	 * Visits a variable assignment, checking for final and initialization rules.
@@ -193,6 +202,10 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	 * @param ws The while statement to visit.
 	 */
 	public void visitWhileStatement(WhileStatement ws) {
+		if (!currentScope.hasParent()) {
+			throw new SemanticException("While statement cannot be in the global scope");
+		}
+
 		var conditionType = ws.getCondition().accept(this);
 		if (isConditionNotOperandType(conditionType)) {
 			throw new SemanticException("While condition must be boolean");
@@ -237,6 +250,10 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	 */
 	@Override
 	public void visitMethodCall(MethodCall mc) {
+		if (!currentScope.hasParent()) {
+			throw new SemanticException("Method call cannot be in the global scope");
+		}
+
 		var method = methodTable.resolve(mc.getIdentifier());
 
 		if (mc.getArguments().size() != method.getParameters().size()) {

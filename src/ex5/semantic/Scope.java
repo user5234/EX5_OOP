@@ -21,6 +21,19 @@ public class Scope {
 		this.parent = parent;
 	}
 
+
+	/**
+	 * Creates a copy of the current scope, including its symbols and initialized states.
+	 *
+	 * @return A new Scope instance that is a copy of the current scope.
+	 */
+	public Scope copy() {
+		var newScope = new Scope(parent);
+		newScope.symbols.putAll(symbols);
+		newScope.initialized.putAll(initialized);
+		return newScope;
+	}
+
 	/**
 	 * Defines a new variable symbol in the current scope.
 	 *
