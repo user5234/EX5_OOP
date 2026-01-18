@@ -1,7 +1,6 @@
 package ex5.ast.statements;
 
 import ex5.ast.ASTVisitor;
-import ex5.ast.expressions.MethodCall;
 
 /**
  * Represents a method call statement in the AST.

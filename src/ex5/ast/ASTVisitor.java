@@ -2,7 +2,7 @@ package ex5.ast;
 
 import ex5.ast.expressions.LiteralExpression;
 import ex5.ast.expressions.LogicalExpression;
-import ex5.ast.expressions.MethodCall;
+import ex5.ast.statements.MethodCall;
 import ex5.ast.expressions.VariableExpression;
 import ex5.ast.statements.*;
 
@@ -16,6 +16,7 @@ public interface ASTVisitor<R> {
 	void visitBlock(Block bl);
 	void visitIfStatement(IfStatement is);
 	void visitMethodArgument(MethodArgument ma);
+	void visitMethodCall(MethodCall mc);
 	void visitMethodDeclaration(MethodDeclaration md);
 	void visitReturnStatement(ReturnStatement rs);
 	void visitVariableAssignment(VariableAssignment va);
@@ -26,6 +27,5 @@ public interface ASTVisitor<R> {
 	// Expressions
 	R visitLiteralExpression(LiteralExpression le);
 	R visitVariableExpression(VariableExpression ve);
-	R visitMethodCall(MethodCall mc);
 	R visitLogicalExpression(LogicalExpression le);
 }

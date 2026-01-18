@@ -15,115 +15,91 @@ public class Parser {
 
 	/**
 	 * Constructs a Parser with the given list of tokens.
+	 *
 	 * @param tokens List of tokens to parse.
 	 */
 	public Parser(List<Token> tokens) {
-		this.ts = new TokenStream(tokens);
+		ts = new TokenStream(tokens);
 	}
 
 	/**
 	 * Parses the entire program and returns a list of statements.
+	 *
 	 * @return List of parsed statements.
 	 * @throws UnexpectedTokenException if an unexpected token is encountered.
 	 */
-	public List<Statement> parseProgram() throws UnexpectedTokenException {
-	    List<Statement> statements = new ArrayList<>();
-		consumeNewlines();
-	    while (!ts.isAtEnd()) {
-	        statements.addAll(parseStatement());
-			consumeNewlines();
-	    }
-	    return statements;
+	public List<Statement> parseProgram() {
+		var statements = new ArrayList<Statement>();
+		while (!ts.isAtEnd()) {
+			statements.addAll(parseStatement());
+		}
+		return statements;
 	}
 
-	/**
-	 * Parses a single statement based on the next token.
-	 * @return List of parsed statements.
-	 * @throws UnexpectedTokenException if an unexpected token is encountered.
+	/*
+	 * Parses a single statement based on the next token type.
 	 */
-	private List<Statement> parseStatement() throws UnexpectedTokenException {
-	    TokenType type = ts.peek().getType();
+	private List<? extends Statement> parseStatement() {
+		var type = ts.peek().getType();
 
-	    return switch (type) {
-	        case IF -> List.of(parseIf());
-	        case WHILE -> List.of(parseWhile());
-	        case RETURN -> List.of(parseReturn());
-	        case FINAL, INT, DOUBLE, STRING, BOOLEAN, CHAR -> parseVariableDeclarations();
-	        case VOID -> List.of(parseMethodDeclaration());
-	        case IDENTIFIER -> List.of(parseIdentifierStartingStatement()); // NEW
-	        default -> throw new UnexpectedTokenException("Unexpected token: " + ts.peek());
-	    };
+		return switch (type) {
+			case IF -> List.of(parseIf());
+			case WHILE -> List.of(parseWhile());
+			case RETURN -> List.of(parseReturn());
+			case FINAL, INT, DOUBLE, STRING, BOOLEAN, CHAR -> parseVariableDeclarations();
+			case VOID -> List.of(parseMethodDeclaration());
+			case IDENTIFIER -> (ts.peek(1).getType() == TokenType.LPAREN) // method call
+					? List.of(parseMethodCall())
+					: parseVariableAssignments();
+			default -> throw new UnexpectedTokenException("Unexpected token: " + ts.peek().getType());
+		};
 	}
 
-	/**
-	 * Parses a statement that starts with an identifier.
-	 * @return Parsed statement.
-	 * @throws UnexpectedTokenException
+	/*
+	 * Parses a method call.
 	 */
-	private Statement parseIdentifierStartingStatement() throws UnexpectedTokenException {
-	    // Lookahead: IDENTIFIER followed by '(' means method call statement
-	    if (ts.peek(1).getType() == TokenType.LPAREN) {   // you need peek(int)
-	        var call = parseMethodCall();
-	        ts.expect(TokenType.SEMICOLON);
-	        expectNewline();
-	        return new MethodCallStatement(call);
-	    }
+	private MethodCall parseMethodCall() {
+		var name = ts.expect(TokenType.IDENTIFIER);
 
-	    // Otherwise must be assignment
-	    return parseVariableAssignment();
-	}
-
-	/**
-	 * Parses a method call expression.
-	 * @return Parsed MethodCall expression.
-	 * @throws UnexpectedTokenException
-	 */
-	private MethodCall parseMethodCall() throws UnexpectedTokenException {
-	    var name = ts.expect(TokenType.IDENTIFIER);
-		
-	    ts.expect(TokenType.LPAREN);
-		
-	    var args = new ArrayList<Expression>();
-	    if (ts.peek().getType() != TokenType.RPAREN) {
-	        args.add(parseExpression());
-	        while (ts.match(TokenType.COMMA)) {
-	            args.add(parseExpression());
-	        }
-	    }
-	
-	    ts.expect(TokenType.RPAREN);
-	
-	    return new MethodCall(name.getValue(), args);
-	}
-	
-	/**
-	 * Parses an if statement.
-	 * @return Parsed IfStatement.
-	 * @throws UnexpectedTokenException
-	 */
-	private IfStatement parseIf() throws UnexpectedTokenException {
-		ts.expect(TokenType.IF);
 		ts.expect(TokenType.LPAREN);
 
+		var args = new ArrayList<Expression>();
+		if (ts.peek().getType() != TokenType.RPAREN) {
+			do {
+				args.add(parseExpression());
+			} while (ts.match(TokenType.COMMA));
+		}
+
+		ts.expect(TokenType.RPAREN);
+		ts.expect(TokenType.SEMICOLON);
+		ts.expect(TokenType.NEWLINE);
+
+		return new MethodCall(name.getValue(), args);
+	}
+
+	/*
+	 * Parses an if statement.
+	 */
+	private IfStatement parseIf() {
+		ts.expect(TokenType.IF);
+
+		ts.expect(TokenType.LPAREN);
 		var condition = parseCondition();
 		ts.expect(TokenType.RPAREN);
 
-		var thenBranch = parseBlock();
+		var body = parseBlock();
 
-		return new IfStatement(condition, thenBranch);
+		return new IfStatement(condition, body);
 	}
 
-	/**
+	/*
 	 * Parses a while statement.
-	 * @return Parsed WhileStatement.
-	 * @throws UnexpectedTokenException
 	 */
-	private WhileStatement parseWhile() throws UnexpectedTokenException {
+	private WhileStatement parseWhile() {
 		ts.expect(TokenType.WHILE);
+
 		ts.expect(TokenType.LPAREN);
-
 		var condition = parseCondition();
-
 		ts.expect(TokenType.RPAREN);
 
 		var body = parseBlock();
@@ -131,110 +107,103 @@ public class Parser {
 		return new WhileStatement(condition, body);
 	}
 
-	/**
+	/*
 	 * Parses a return statement.
-	 * @return Parsed ReturnStatement.
-	 * @throws UnexpectedTokenException
 	 */
-	private ReturnStatement parseReturn() throws UnexpectedTokenException {
-	    ts.expect(TokenType.RETURN);
-	    ts.expect(TokenType.SEMICOLON);
-	    expectNewline();                 
-	    return new ReturnStatement();
+	private ReturnStatement parseReturn() {
+		ts.expect(TokenType.RETURN);
+		ts.expect(TokenType.SEMICOLON);
+		ts.expect(TokenType.NEWLINE);
+		return new ReturnStatement();
 	}
 
-	/**
+	/*
 	 * Parses a method declaration.
-	 * @return Parsed MethodDeclaration.
-	 * @throws UnexpectedTokenException
 	 */
-	private MethodDeclaration parseMethodDeclaration() throws UnexpectedTokenException {
+	private MethodDeclaration parseMethodDeclaration() {
 		ts.expect(TokenType.VOID);
-		var name = ts.expect(TokenType.IDENTIFIER);
+		var identifier = ts.expect(TokenType.IDENTIFIER);
 
+		ts.expect(TokenType.LPAREN);
 		var arguments = parseMethodArguments();
+		ts.expect(TokenType.RPAREN);
+
 		var body = parseBlock();
 
-		return new MethodDeclaration(name.getValue(), arguments, body);
+		return new MethodDeclaration(identifier.getValue(), arguments, body);
 	}
 
-	/**
+	/*
 	 * Parses a variable assignment statement.
-	 * @return Parsed VariableAssignment.
-	 * @throws UnexpectedTokenException
 	 */
-	private VariableAssignment parseVariableAssignment() throws UnexpectedTokenException {
-	    var name = ts.expect(TokenType.IDENTIFIER);
-	    ts.expect(TokenType.ASSIGN);
+	private List<VariableAssignment> parseVariableAssignments() {
+		var assignments = new ArrayList<VariableAssignment>();
 
-	    var value = parseExpression();
-	    ts.expect(TokenType.SEMICOLON);
-	    expectNewline();                 
+		do {
+			var identifier = ts.expect(TokenType.IDENTIFIER);
+			ts.expect(TokenType.ASSIGN);
+			var value = parseExpression();
 
-	    return new VariableAssignment(name.getValue(), value);
+			assignments.add(new VariableAssignment(identifier.getValue(), value));
+		} while (ts.match(TokenType.COMMA));
+
+		ts.expect(TokenType.SEMICOLON);
+		ts.expect(TokenType.NEWLINE);
+
+		return assignments;
 	}
 
-	/**
+	/*
 	 * Parses a block of statements enclosed in braces.
-	 * @return Parsed Block.
-	 * @throws UnexpectedTokenException
 	 */
-	private Block parseBlock() throws UnexpectedTokenException {
-	ts.expect(TokenType.LBRACE);
-	consumeNewlines();   
-	var statements = new ArrayList<Statement>();
-	while (!ts.match(TokenType.RBRACE)) {
-	    statements.addAll(parseStatement());
-	    consumeNewlines(); 
-	}
-	expectNewline();     
-	return new Block(statements);
+	private Block parseBlock() {
+		ts.expect(TokenType.LBRACE);
+		ts.expect(TokenType.NEWLINE);
+
+		var statements = new ArrayList<Statement>();
+		while (!ts.match(TokenType.RBRACE)) {
+			statements.addAll(parseStatement());
+		}
+
+		ts.expect(TokenType.NEWLINE);
+		return new Block(statements);
 	}
 
-	/**
-	 * Parses variable declarations.
-	 * @return List of parsed VariableDeclaration statements.
-	 * @throws UnexpectedTokenException
+	/*
+	 * Parses variable declarations, possibly multiple in one statement.
 	 */
-	private List<Statement> parseVariableDeclarations() throws UnexpectedTokenException {
-	   boolean isFinal = ts.match(TokenType.FINAL);
+	private List<VariableDeclaration> parseVariableDeclarations() {
+		boolean isFinal = ts.match(TokenType.FINAL);
 
-	   TokenType type = ts.consume().getType();
-	   switch (type) {
-	       case INT, DOUBLE, STRING, BOOLEAN, CHAR -> {}
-	       default -> throw new UnexpectedTokenException("Invalid variable type: " + type);
-	   }
+		var type = ts.consume().getType();
+		switch (type) {
+			case INT, DOUBLE, STRING, BOOLEAN, CHAR -> {
+			}
+			default -> throw new UnexpectedTokenException("Invalid variable type: " + type);
+		}
 
-	   var decls = new ArrayList<Statement>();
+		var declarations = new ArrayList<VariableDeclaration>();
 
-	   while (true) {
-	       var nameTok = ts.expect(TokenType.IDENTIFIER);
+		do {
+			var identifier = ts.expect(TokenType.IDENTIFIER);
+			var initializer = ts.match(TokenType.ASSIGN) ? parseExpression() : null;
 
-	       Expression init = null;
-	       if (ts.match(TokenType.ASSIGN)) {
-	           init = parseExpression();
-	       }
+			declarations.add(
+					new VariableDeclaration(type, identifier.getValue(), initializer, isFinal)
+			);
 
-	       decls.add(new VariableDeclaration(type, nameTok.getValue(), init, isFinal));
+		} while (ts.match(TokenType.COMMA));
 
-	       if (ts.match(TokenType.COMMA)) {
-	           continue;
-	       }
-	       break;
-	   }
-
-	   ts.expect(TokenType.SEMICOLON);
-	   expectNewline();
-	   return decls;
+		ts.expect(TokenType.SEMICOLON);
+		ts.expect(TokenType.NEWLINE);
+		return declarations;
 	}
 
 
-	/**
+	/*
 	 * Parses an expression.
-	 * @return Parsed Expression.
-	 * @throws UnexpectedTokenException
 	 */
-	private Expression parseExpression() throws UnexpectedTokenException {
+	private Expression parseExpression() {
 		var t = ts.peek();
 
 		return switch (t.getType()) {
@@ -247,102 +216,69 @@ public class Parser {
 		};
 	}
 
-	/**
-	 * Parses a condition expression.
-	 * @return Parsed Expression.
-	 * @throws UnexpectedTokenException
+	/*
+	 * Parses a condition with logical operators.
 	 */
-	private Expression parseCondition() throws UnexpectedTokenException {
-    	Expression left = parseConditionAtom();
+	private Expression parseCondition() {
+		var left = parseConditionAtom();
 
-    	while (true) {
-    	    if (ts.match(TokenType.AND)) {              // && token type
-    	        Expression right = parseConditionAtom();
-    	        left = new LogicalExpression(left, TokenType.AND, right);
-    	    } else if (ts.match(TokenType.OR)) {        // || token type
-    	        Expression right = parseConditionAtom();
-    	        left = new LogicalExpression(left, TokenType.OR, right);
-    	    } else {
-    	        break;
-    	    }
-    	}
-    	return left;
+		while (true) {
+
+			if (ts.match(TokenType.AND)) {
+				var right = parseConditionAtom();
+				left = new LogicalExpression(left, TokenType.AND, right);
+			}
+			else if (ts.match(TokenType.OR)) {
+				var right = parseConditionAtom();
+				left = new LogicalExpression(left, TokenType.OR, right);
+			}
+			else {
+				break;
+			}
+		}
+		return left;
 	}
 
-	/**
-	 * Parses a condition atom.
-	 * @return Parsed Expression.
-	 * @throws UnexpectedTokenException
+	/*
+	 * Parses a condition atom (literal or variable).
 	 */
-	private Expression parseConditionAtom() throws UnexpectedTokenException {
-	    Token t = ts.peek();
+	private Expression parseConditionAtom() {
+		var t = ts.peek();
 
-	    return switch (t.getType()) {
-	        case BOOLEAN_LITERAL, INT_LITERAL, DOUBLE_LITERAL ->
-	                new LiteralExpression(ts.consume());
+		return switch (t.getType()) {
+			case BOOLEAN_LITERAL, INT_LITERAL, DOUBLE_LITERAL ->
+					new LiteralExpression(ts.consume());
 
-	        case IDENTIFIER ->
-	                new VariableExpression(ts.consume().getValue());
+			case IDENTIFIER -> new VariableExpression(ts.consume().getValue());
 
-	        default -> throw new UnexpectedTokenException("Invalid condition atom: " + t);
-	    };
+			default -> throw new UnexpectedTokenException("Invalid condition atom: " + t);
+		};
 	}
 
-	/**
-	 * Parses method arguments.
-	 * @return List of parsed MethodArgument.
-	 * @throws UnexpectedTokenException
+	/*
+	 * Parses method arguments within parentheses.
 	 */
-	private List<MethodArgument> parseMethodArguments() throws UnexpectedTokenException {
-	    var arguments = new ArrayList<MethodArgument>();
-	    ts.expect(TokenType.LPAREN);
-	    // Empty parameter list: ()
-	    if (ts.peek().getType() == TokenType.RPAREN) {
-	        ts.expect(TokenType.RPAREN);
-	        return arguments;
-	    }
-	    while (true) {
-	        var type = ts.consume().getType();
-	        switch (type) {
-	            case INT, DOUBLE, STRING, BOOLEAN, CHAR -> {}
-	            default -> throw new UnexpectedTokenException("Invalid argument type: " + type);
-	        }
-	        var name = ts.expect(TokenType.IDENTIFIER);
-	        arguments.add(new MethodArgument(type, name.getValue()));
-			
-	        // If there's a comma, another parameter must follow
-	        if (ts.match(TokenType.COMMA)) {
-	            continue;
-	        }
+	private List<MethodArgument> parseMethodArguments() {
+		var arguments = new ArrayList<MethodArgument>();
 
-	        // Otherwise we must be at ')'
-	        ts.expect(TokenType.RPAREN);
-	        break;
-	    }
+		if (ts.peek().getType() == TokenType.RPAREN) {
+			return arguments;
+		}
 
-	    return arguments;
+		do {
+			var type = ts.consume().getType();
+			switch (type) {
+				case INT, DOUBLE, STRING, BOOLEAN, CHAR -> {
+				}
+				default -> throw new UnexpectedTokenException("Invalid argument type: " + type);
+			}
+			var name = ts.expect(TokenType.IDENTIFIER);
+			arguments.add(new MethodArgument(type, name.getValue()));
+
+		} while (ts.match(TokenType.COMMA));
+
+		return arguments;
 	}
-
-	/**
-	 * Consumes all consecutive NEWLINE tokens.
-	 */
-	private void consumeNewlines() {
-	    while (ts.match(TokenType.NEWLINE)) {
-	        // keep consuming
-	    }
-	}
-
-	/**
-	 * Expects at least one NEWLINE token.
-	 * @throws UnexpectedTokenException if no NEWLINE is found.
-	 */
-	private void expectNewline() throws UnexpectedTokenException {
-	    if (!ts.match(TokenType.NEWLINE)) {
-	        throw new UnexpectedTokenException("Expected newline");
-	    }
-	    consumeNewlines(); // optionally allow multiple blank lines
-	}
-
 }
 
 

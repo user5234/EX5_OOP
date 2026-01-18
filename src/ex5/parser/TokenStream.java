@@ -38,10 +38,10 @@ public class TokenStream {
 	 * @return the k-th token ahead
 	 */
 	public Token peek(int k) {
-	    int idx = Math.min(pos + k, tokens.size() - 1);
-	    return tokens.get(idx);
+		int idx = Math.min(pos + k, tokens.size() - 1);
+		return tokens.get(idx);
 	}
-	
+
 	/**
 	 * Checks if the end of the token stream has been reached.
 	 *
@@ -85,7 +85,7 @@ public class TokenStream {
 	 * @return the consumed token
 	 * @throws UnexpectedTokenException if the token does not match
 	 */
-	public Token expect(TokenType type) throws UnexpectedTokenException {
+	public Token expect(TokenType type) {
 		if (isAtEnd()) {
 			throw new UnexpectedTokenException("Expected " + type + " but reached end of input");
 		}

@@ -2,7 +2,7 @@ package ex5.semantic;
 
 import ex5.ast.*;
 import ex5.ast.expressions.LiteralExpression;
-import ex5.ast.expressions.MethodCall;
+import ex5.ast.statements.MethodCall;
 import ex5.ast.expressions.VariableExpression;
 import ex5.ast.expressions.LogicalExpression;
 import ex5.ast.statements.*;
@@ -36,24 +36,26 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	 * @param statements The list of statements to analyze.
 	 */
 	public void analyze(List<Statement> statements) {
-	    // Pass 1: collect/define all methods (signatures only)
-	    for (var s : statements) {
-	        if (s instanceof MethodDeclaration md) {
-	            deferredMethods.add(md);
-	            methodTable.define(new MethodSymbol(md.getIdentifier(), md.getArguments()));
-	        } else {
-	            s.accept(this);
-	        }
-	    }
+		// Pass 1: collect/define all methods (signatures only)
+		for (var s : statements) {
+			if (s instanceof MethodDeclaration md) {
+				deferredMethods.add(md);
+				methodTable.define(new MethodSymbol(md.getIdentifier(), md.getArguments()));
+			}
+			else {
+				s.accept(this);
+			}
+		}
 
-	    // Pass 2: analyze method bodies
-	    for (var md : deferredMethods) {
-	        md.accept(this);
-	    }
+		// Pass 2: analyze method bodies
+		for (var md : deferredMethods) {
+			md.accept(this);
+		}
 	}
 
 	/**
 	 * Visits a block statement, creating a new scope for its variables.
+	 *
 	 * @param bl The block statement to visit.
 	 */
 	@Override
@@ -70,6 +72,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 	/**
 	 * Visits an if statement, checking the condition type and visiting the body.
+	 *
 	 * @param is The if statement to visit.
 	 */
 	@Override
@@ -84,15 +87,17 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 	/**
 	 * Visits a method argument, defining it in the current scope.
+	 *
 	 * @param ma The method argument to visit.
 	 */
 	@Override
 	public void visitMethodArgument(MethodArgument ma) {
-	    currentScope.define(new Symbol(ma.getIdentifier(), ma.getType(), false, true));
+		currentScope.define(new Symbol(ma.getIdentifier(), ma.getType(), false, true));
 	}
 
 	/**
 	 * Visits a method declaration, creating a new scope for its parameters and body.
+	 *
 	 * @param md The method declaration to visit.
 	 */
 	@Override
@@ -107,14 +112,17 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 		currentScope = new Scope(null);
 		for (var param : md.getArguments()) {
-		    param.accept(this);
+			param.accept(this);
 		}
 
 		md.getBody().accept(this);
 
 		var statements = md.getBody().getStatements();
-		if (statements.isEmpty() || !(statements.get(statements.size() - 1) instanceof ReturnStatement)) {
-		    throw new SemanticException("Method " + md.getIdentifier() + " must end with a return statement");
+		if (statements.isEmpty() ||
+		    !(statements.get(statements.size() - 1) instanceof ReturnStatement)) {
+			throw new SemanticException("Method " +
+			                            md.getIdentifier() +
+			                            " must end with a return statement");
 		}
 
 		currentScope = outerScope;
@@ -123,6 +131,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 	/**
 	 * Visits a return statement.
+	 *
 	 * @param rs The return statement to visit.
 	 */
 	@Override
@@ -130,53 +139,56 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 	/**
 	 * Visits a variable assignment, checking for final and initialization rules.
+	 *
 	 * @param va The variable assignment to visit.
 	 */
 	@Override
 	public void visitVariableAssignment(VariableAssignment va) {
-	    var symbol = currentScope.resolve(va.getIdentifier());
+		var symbol = currentScope.resolve(va.getIdentifier());
 
-	    // final rule: cannot change after initialized
-	    if (symbol.isFinal() && symbol.isInitialized()) {
-	        throw new SemanticException("Cannot assign to final variable: " + va.getIdentifier());
-	    }
+		// final rule: cannot change after initialized
+		if (symbol.isFinal() && symbol.isInitialized()) {
+			throw new SemanticException("Cannot assign to final variable: " + va.getIdentifier());
+		}
 
-	    var exprType = va.getExpression().accept(this);
+		var exprType = va.getExpression().accept(this);
 
-	    if (!isAssignable(symbol.getType(), exprType)) {
-	        throw new SemanticException("Type mismatch: cannot assign " +
-	                exprType + " to " + symbol.getType());
-	    }
+		if (!isAssignable(symbol.getType(), exprType)) {
+			throw new SemanticException("Type mismatch: cannot assign " +
+			                            exprType + " to " + symbol.getType());
+		}
 
-	    symbol.setInitialized(true);
+		symbol.setInitialized(true);
 	}
 
 	/**
 	 * Visits a variable declaration, defining it in the current scope.
+	 *
 	 * @param vs The variable declaration to visit.
 	 */
 	@Override
 	public void visitVariableDeclaration(VariableDeclaration vs) {
-	    // NEW: forbid shadowing any existing symbol (including parameters)
-	    if (currentScope.isDefinedInAnyScope(vs.getIdentifier())) {
-	        throw new SemanticException("Variable already declared: " + vs.getIdentifier());
-	    }
+		// NEW: forbid shadowing any existing symbol (including parameters)
+		if (currentScope.isDefinedInAnyScope(vs.getIdentifier())) {
+			throw new SemanticException("Variable already declared: " + vs.getIdentifier());
+		}
 
-	    boolean initd = (vs.getInitializer() != null);
+		boolean initd = (vs.getInitializer() != null);
 
-	    if (initd) {
-	        var initType = vs.getInitializer().accept(this);
-	        if (!isAssignable(vs.getType(), initType)) {
-	            throw new SemanticException("Type mismatch: cannot assign " +
-	                    initType + " to " + vs.getType());
-	        }
-	    }
+		if (initd) {
+			var initType = vs.getInitializer().accept(this);
+			if (!isAssignable(vs.getType(), initType)) {
+				throw new SemanticException("Type mismatch: cannot assign " +
+				                            initType + " to " + vs.getType());
+			}
+		}
 
-	    currentScope.define(new Symbol(vs.getIdentifier(), vs.getType(), vs.isFinal(), initd));
+		currentScope.define(new Symbol(vs.getIdentifier(), vs.getType(), vs.isFinal(), initd));
 	}
 
 	/**
 	 * Visits a while statement, checking the condition type and visiting the body.
+	 *
 	 * @param ws The while statement to visit.
 	 */
 	public void visitWhileStatement(WhileStatement ws) {
@@ -192,6 +204,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 	/**
 	 * Visits a literal expression, returning its type.
+	 *
 	 * @param le The literal expression to visit.
 	 */
 	@Override
@@ -201,23 +214,28 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 	/**
 	 * Visits a variable expression, returning its type.
+	 *
 	 * @param ve The variable expression to visit.
 	 */
 	@Override
 	public TokenType visitVariableExpression(VariableExpression ve) {
-	    var sym = currentScope.resolve(ve.getIdentifier());
-	    if (!sym.isInitialized()) {
-	        throw new SemanticException("Variable " + ve.getIdentifier() + " used before initialization");
-	    }
-	    return sym.getType();
+		var sym = currentScope.resolve(ve.getIdentifier());
+		if (!sym.isInitialized()) {
+			throw new SemanticException("Variable " +
+			                            ve.getIdentifier() +
+			                            " used before initialization");
+		}
+		return sym.getType();
 	}
 
 	/**
-	 * Visits a method call expression, checking argument types and returning the method's return type.
+	 * Visits a method call expression, checking argument types and returning the method's return
+	 * type.
+	 *
 	 * @param mc The method call to visit.
 	 */
 	@Override
-	public TokenType visitMethodCall(MethodCall mc) {
+	public void visitMethodCall(MethodCall mc) {
 		var method = methodTable.resolve(mc.getIdentifier());
 
 		if (mc.getArguments().size() != method.getParameters().size()) {
@@ -233,40 +251,40 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 			TokenType argType = mc.getArguments().get(i).accept(this);
 			TokenType paramType = method.getParameters().get(i).getType();
 			if (!isAssignable(paramType, argType)) {
-			    throw new SemanticException("Argument " + (i + 1) +
-			            " of method " + mc.getIdentifier() +
-			            " expects " + paramType + ", got " + argType);
+				throw new SemanticException("Argument " + (i + 1) +
+				                            " of method " + mc.getIdentifier() +
+				                            " expects " + paramType + ", got " + argType);
 			}
-			}
-
-		return TokenType.VOID;
+		}
 	}
 
 	/**
 	 * Visits a logical expression, checking operand types and returning boolean type.
+	 *
 	 * @param le The logical expression to visit.
 	 */
 	@Override
 	public TokenType visitLogicalExpression(LogicalExpression le) {
-	    TokenType left = le.getLeft().accept(this);
-	    TokenType right = le.getRight().accept(this);
+		TokenType left = le.getLeft().accept(this);
+		TokenType right = le.getRight().accept(this);
 
-	    if (!isConditionOperandType(left) || !isConditionOperandType(right)) {
-	        throw new SemanticException("Operands of &&/|| must be boolean/int/double");
-	    }
+		if (!isConditionOperandType(left) || !isConditionOperandType(right)) {
+			throw new SemanticException("Operands of &&/|| must be boolean/int/double");
+		}
 
-	    return TokenType.BOOLEAN;
+		return TokenType.BOOLEAN;
 	}
 
 	/**
 	 * Visits a method call statement.
+	 *
 	 * @param mcs The method call statement to visit.
 	 */
 	@Override
-		public void visitMethodCallStatement(MethodCallStatement mcs) {
-		    mcs.getCall().accept(this);
-		}
-		
+	public void visitMethodCallStatement(MethodCallStatement mcs) {
+		mcs.getCall().accept(this);
+	}
+
 	// ───────── HELPERS ─────────
 
 	/**
@@ -293,7 +311,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	 * @return True if valid for conditions, false otherwise.
 	 */
 	private boolean isConditionOperandType(TokenType t) {
-	  return t == TokenType.BOOLEAN || t == TokenType.INT || t == TokenType.DOUBLE;
+		return t == TokenType.BOOLEAN || t == TokenType.INT || t == TokenType.DOUBLE;
 	}
 
 	/**
@@ -304,14 +322,15 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	 * @return True if assignable, false otherwise.
 	 */
 	private boolean isAssignable(TokenType target, TokenType source) {
-    	if (target == source) return true;
-		
-    	// numeric promotion
-    	if (target == TokenType.DOUBLE && source == TokenType.INT) return true;
-		
-    	// your rule: boolean can accept int/double
-    	if (target == TokenType.BOOLEAN && (source == TokenType.INT || source == TokenType.DOUBLE)) return true;
-		
-    	return false;
+		if (target == source) return true;
+
+		// numeric promotion
+		if (target == TokenType.DOUBLE && source == TokenType.INT) return true;
+
+		// your rule: boolean can accept int/double
+		if (target == TokenType.BOOLEAN && (source == TokenType.INT || source == TokenType.DOUBLE))
+			return true;
+
+		return false;
 	}
 }

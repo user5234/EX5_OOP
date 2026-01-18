@@ -3,7 +3,7 @@ package ex5.lexer;
 /**
  * An exception thrown when an unknown token is encountered during lexing.
  */
-public class UnknownTokenException extends Exception {
+public class UnknownTokenException extends RuntimeException {
 
 	/**
 	 * Constructs an UnknownTokenException with the given message.

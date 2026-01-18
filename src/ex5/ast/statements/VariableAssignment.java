@@ -43,8 +43,8 @@ public class VariableAssignment extends Statement {
 
 	/**
 	 * Accepts a visitor that implements the ASTVisitor interface.
+	 *
 	 * @param visitor the visitor to accept
-	 * @return the result of the visitor's operation
 	 */
 	@Override
 	public <R> void accept(ASTVisitor<R> visitor) {
