@@ -6,6 +6,9 @@ import java.util.List;
 
 /**
  * Represents a method symbol in the semantic analysis phase.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class MethodSymbol {
 

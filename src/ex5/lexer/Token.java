@@ -2,6 +2,9 @@ package ex5.lexer;
 
 /**
  * A token representing a lexical unit with a type and value.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public final class Token {
 
@@ -10,7 +13,8 @@ public final class Token {
 
 	/**
 	 * Constructs a Token with the given type and value.
-	 * @param type the type of the token
+	 *
+	 * @param type  the type of the token
 	 * @param value the string value of the token
 	 */
 	public Token(TokenType type, String value) {
@@ -20,6 +24,7 @@ public final class Token {
 
 	/**
 	 * Returns the type of the token.
+	 *
 	 * @return the token type
 	 */
 	public TokenType getType() {
@@ -28,6 +33,7 @@ public final class Token {
 
 	/**
 	 * Returns the string value of the token.
+	 *
 	 * @return the token value
 	 */
 	public String getValue() {

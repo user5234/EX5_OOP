@@ -5,6 +5,9 @@ import ex5.ast.expressions.Expression;
 
 /**
  * Represents a while statement in the AST.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class WhileStatement extends Statement {
 
@@ -24,6 +27,7 @@ public class WhileStatement extends Statement {
 
 	/**
 	 * Gets the condition expression of the while loop.
+	 *
 	 * @return The condition expression.
 	 */
 	public Expression getCondition() {
@@ -32,6 +36,7 @@ public class WhileStatement extends Statement {
 
 	/**
 	 * Gets the body block of the while loop.
+	 *
 	 * @return The body block.
 	 */
 	public Block getBody() {
@@ -40,8 +45,8 @@ public class WhileStatement extends Statement {
 
 	/**
 	 * Accepts a visitor that implements the ASTVisitor interface.
+	 *
 	 * @param visitor the visitor to accept
-	 * @return the result of the visitor's operation
 	 */
 	@Override
 	public <R> void accept(ASTVisitor<R> visitor) {
@@ -50,6 +55,7 @@ public class WhileStatement extends Statement {
 
 	/**
 	 * Returns a string representation of the while statement.
+	 *
 	 * @return A string representing the while statement.
 	 */
 	@Override

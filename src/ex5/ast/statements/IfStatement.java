@@ -5,6 +5,9 @@ import ex5.ast.expressions.Expression;
 
 /**
  * Represents an if statement in the AST.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class IfStatement extends Statement {
 
@@ -42,8 +45,8 @@ public class IfStatement extends Statement {
 
 	/**
 	 * Accepts a visitor to process this if statement.
+	 *
 	 * @param visitor the AST visitor
-	 * @return the result of the visitor's processing
 	 */
 	@Override
 	public <R> void accept(ASTVisitor<R> visitor) {

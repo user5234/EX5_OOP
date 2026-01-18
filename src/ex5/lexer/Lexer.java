@@ -4,6 +4,9 @@ import java.util.*;
 
 /**
  * A simple lexer that tokenizes an input string into a list of tokens.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public final class Lexer {
 
@@ -16,33 +19,35 @@ public final class Lexer {
 
 	/**
 	 * Tokenizes the input line into a list of tokens.
+	 *
 	 * @return a list of tokens
 	 * @throws UnknownTokenException if an unknown token is encountered
 	 */
 	public List<Token> tokenize(String line) {
-    	var tokens = new ArrayList<Token>();
-    	pos = 0;
+		var tokens = new ArrayList<Token>();
+		pos = 0;
 
-    	skipWhitespace(line);
+		skipWhitespace(line);
 
-    	while (pos < line.length()) {
-    	    var remaining = line.substring(pos);
+		while (pos < line.length()) {
+			var remaining = line.substring(pos);
 
-    	    var token = currentToken(remaining);
-    	    tokens.add(token);
-    	    pos += token.getValue().length();
+			var token = currentToken(remaining);
+			tokens.add(token);
+			pos += token.getValue().length();
 
-    	    skipWhitespace(line);
-    	}
+			skipWhitespace(line);
+		}
 
-    	// Add a newline token at the end of each line
-    	tokens.add(new Token(TokenType.NEWLINE, "\n"));
-    	return tokens;
+		// Add a newline token at the end of each line
+		tokens.add(new Token(TokenType.NEWLINE, "\n"));
+		return tokens;
 	}
 
 
 	/**
 	 * Identifies the current token from the input string.
+	 *
 	 * @param input the remaining input string
 	 * @return the identified token
 	 * @throws UnknownTokenException if no valid token is found
@@ -57,7 +62,7 @@ public final class Lexer {
 		}
 		var token = input.split("\\s+")[0];
 		throw new UnknownTokenException("Unknown token " + token + " at position " + pos);
-	}   
+	}
 
 	/**
 	 * Skips whitespace characters in the input line.

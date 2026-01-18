@@ -5,6 +5,9 @@ import ex5.lexer.Token;
 
 /**
  * A class representing a literal expression in the AST.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class LiteralExpression extends Expression {
 
@@ -12,6 +15,7 @@ public class LiteralExpression extends Expression {
 
 	/**
 	 * Constructs a LiteralExpression with the given token.
+	 *
 	 * @param literal the token representing the literal
 	 */
 	public LiteralExpression(Token literal) {
@@ -20,6 +24,7 @@ public class LiteralExpression extends Expression {
 
 	/**
 	 * Returns the token representing the literal.
+	 *
 	 * @return the literal token
 	 */
 	public Token getLiteral() {
@@ -28,8 +33,9 @@ public class LiteralExpression extends Expression {
 
 	/**
 	 * Accepts a visitor that implements the ASTVisitor interface.
+	 *
 	 * @param visitor the visitor to accept
-	 * @param <R> the return type of the visitor's visit method
+	 * @param <R>     the return type of the visitor's visit method
 	 * @return the result of the visitor's visit method
 	 */
 	@Override
@@ -39,6 +45,7 @@ public class LiteralExpression extends Expression {
 
 	/**
 	 * Returns a string representation of the literal expression.
+	 *
 	 * @return the string representation of the literal
 	 */
 	@Override

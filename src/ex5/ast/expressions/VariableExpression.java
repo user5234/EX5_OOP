@@ -4,6 +4,9 @@ import ex5.ast.ASTVisitor;
 
 /**
  * A class representing a variable expression in the AST.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class VariableExpression extends Expression {
 
@@ -11,6 +14,7 @@ public class VariableExpression extends Expression {
 
 	/**
 	 * Constructs a VariableExpression with the given identifier.
+	 *
 	 * @param identifier the name of the variable
 	 */
 	public VariableExpression(String identifier) {
@@ -19,6 +23,7 @@ public class VariableExpression extends Expression {
 
 	/**
 	 * Returns the name of the variable.
+	 *
 	 * @return the variable name
 	 */
 	public String getIdentifier() {
@@ -27,8 +32,9 @@ public class VariableExpression extends Expression {
 
 	/**
 	 * Accepts a visitor that implements the ASTVisitor interface.
+	 *
 	 * @param visitor the visitor to accept
-	 * @param <R> the return type of the visitor's visit method
+	 * @param <R>     the return type of the visitor's visit method
 	 * @return the result of the visitor's visit method
 	 */
 	@Override
@@ -38,6 +44,7 @@ public class VariableExpression extends Expression {
 
 	/**
 	 * Returns a string representation of the variable expression.
+	 *
 	 * @return the string representation of the variable
 	 */
 	@Override

@@ -7,6 +7,9 @@ import java.util.List;
 
 /**
  * A class representing a method call expression in the AST.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class MethodCall extends Statement {
 

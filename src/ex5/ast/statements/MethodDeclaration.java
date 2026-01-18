@@ -6,6 +6,9 @@ import java.util.List;
 
 /**
  * Represents a method declaration statement in the AST.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class MethodDeclaration extends Statement {
 
@@ -55,8 +58,8 @@ public class MethodDeclaration extends Statement {
 
 	/**
 	 * Accepts a visitor to process this MethodDeclaration node.
+	 *
 	 * @param visitor The ASTVisitor to accept.
-	 * @return The result of the visitor's processing.
 	 */
 	@Override
 	public <R> void accept(ASTVisitor<R> visitor) {

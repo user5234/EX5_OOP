@@ -6,82 +6,96 @@ import ex5.ast.expressions.Expression;
 
 /**
  * Represents a variable declaration statement in the AST.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class VariableDeclaration extends Statement {
 
-    private final TokenType type;
-    private final String identifier;
-    private final Expression initializer; // may be null
-    private final boolean isFinal;
+	private final TokenType type;
+	private final String identifier;
+	private final Expression initializer; // may be null
+	private final boolean isFinal;
 
-    /**
-     * Constructs a VariableDeclaration node.
-     *
-     * @param type        The data type of the variable.
-     * @param identifier  The name of the variable.
-     * @param initializer The expression assigned to the variable (may be null).
-     * @param isFinal     Indicates if the variable is declared as final.
-     */
-    public VariableDeclaration(TokenType type, String identifier, Expression initializer, boolean isFinal) {
-        this.type = type;
-        this.identifier = identifier;
-        this.initializer = initializer;
-        this.isFinal = isFinal;
-    }
+	/**
+	 * Constructs a VariableDeclaration node.
+	 *
+	 * @param type        The data type of the variable.
+	 * @param identifier  The name of the variable.
+	 * @param initializer The expression assigned to the variable (may be null).
+	 * @param isFinal     Indicates if the variable is declared as final.
+	 */
+	public VariableDeclaration(
+			TokenType type,
+			String identifier,
+			Expression initializer,
+			boolean isFinal
+	) {
+		this.type = type;
+		this.identifier = identifier;
+		this.initializer = initializer;
+		this.isFinal = isFinal;
+	}
 
-    /**
-     * Gets the data type of the variable.
-     * @return The variable's data type.
-     */
-    public TokenType getType() {
-        return type;
-    }
+	/**
+	 * Gets the data type of the variable.
+	 *
+	 * @return The variable's data type.
+	 */
+	public TokenType getType() {
+		return type;
+	}
 
-    /**
-     * Gets the name of the variable.
-     * @return The variable's identifier.
-     */
-    public String getIdentifier() {
-        return identifier;
-    }
+	/**
+	 * Gets the name of the variable.
+	 *
+	 * @return The variable's identifier.
+	 */
+	public String getIdentifier() {
+		return identifier;
+	}
 
-    /**
-     * Gets the initializer expression of the variable.
-     * @return The initializer expression, or null if none.
-     */
-    public Expression getInitializer() {
-        return initializer;
-    }
+	/**
+	 * Gets the initializer expression of the variable.
+	 *
+	 * @return The initializer expression, or null if none.
+	 */
+	public Expression getInitializer() {
+		return initializer;
+	}
 
-    /**
-     * Checks if the variable is declared as final.
-     * @return True if the variable is final, false otherwise.
-     */
-    public boolean isFinal() {
-        return isFinal;
-    }
+	/**
+	 * Checks if the variable is declared as final.
+	 *
+	 * @return True if the variable is final, false otherwise.
+	 */
+	public boolean isFinal() {
+		return isFinal;
+	}
 
-    /**
-     * Accepts a visitor that implements the ASTVisitor interface.
-     * @param visitor the visitor to accept
-     * @return the result of the visitor's operation
-     */
-    @Override
-    public <R> void accept(ASTVisitor<R> visitor) {
-        visitor.visitVariableDeclaration(this);
-    }
+	/**
+	 * Accepts a visitor that implements the ASTVisitor interface.
+	 *
+	 * @param visitor the visitor to accept
+	 */
+	@Override
+	public <R> void accept(ASTVisitor<R> visitor) {
+		visitor.visitVariableDeclaration(this);
+	}
 
-    /**
-     * Returns a string representation of the variable declaration.
-     * @return A string representing the variable declaration.
-     */
-    @Override
-    public String print() {
-        String f = isFinal ? "final " : "";
-        if (initializer != null) {
-            return f + type + " " + identifier + " = " + initializer.print();
-        } else {
-            return f + type + " " + identifier;
-        }
-    }
+	/**
+	 * Returns a string representation of the variable declaration.
+	 *
+	 * @return A string representing the variable declaration.
+	 */
+	@Override
+	public String print() {
+		var f = isFinal ? "final " : "";
+		if (initializer != null) {
+			return f + type + " " + identifier + " = " + initializer.print();
+		}
+		else {
+			return f + type + " " + identifier;
+		}
+	}
 }

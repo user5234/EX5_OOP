@@ -7,6 +7,9 @@ import java.util.List;
 
 /**
  * A stream of tokens for parsing.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class TokenStream {
 

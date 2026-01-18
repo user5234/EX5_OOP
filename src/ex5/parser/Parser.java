@@ -8,6 +8,9 @@ import java.util.*;
 
 /**
  * Parser for the Sjavac language.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class Parser {
 
@@ -51,7 +54,8 @@ public class Parser {
 			case IDENTIFIER -> (ts.peek(1).getType() == TokenType.LPAREN) // method call
 					? List.of(parseMethodCall())
 					: parseVariableAssignments();
-			default -> throw new UnexpectedTokenException("Unexpected token: " + ts.peek().getType());
+			default ->
+					throw new UnexpectedTokenException("Unexpected token: " + ts.peek().getType());
 		};
 	}
 
@@ -223,7 +227,6 @@ public class Parser {
 		var left = parseConditionAtom();
 
 		while (true) {
-
 			if (ts.match(TokenType.AND)) {
 				var right = parseConditionAtom();
 				left = new LogicalExpression(left, TokenType.AND, right);
@@ -251,7 +254,7 @@ public class Parser {
 
 			case IDENTIFIER -> new VariableExpression(ts.consume().getValue());
 
-			default -> throw new UnexpectedTokenException("Invalid condition atom: " + t);
+			default -> throw new UnexpectedTokenException("Invalid condition atom: " + t.getType());
 		};
 	}
 

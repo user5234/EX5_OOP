@@ -6,6 +6,9 @@ import ex5.ast.expressions.Expression;
 /**
  * Represents a variable assignment statement in the AST.
  * Example: x = 5 + 3;
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class VariableAssignment extends Statement {
 

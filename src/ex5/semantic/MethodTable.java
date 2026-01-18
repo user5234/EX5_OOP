@@ -4,6 +4,9 @@ import java.util.*;
 
 /**
  * Represents a table of method symbols for semantic analysis.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class MethodTable {
 

@@ -5,6 +5,9 @@ import ex5.ast.ASTVisitor;
 
 /**
  * An abstract class representing an expression in the AST.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public abstract class Expression extends ASTNode {
 

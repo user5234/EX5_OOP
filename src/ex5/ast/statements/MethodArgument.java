@@ -5,6 +5,9 @@ import ex5.lexer.TokenType;
 
 /**
  * Represents a method argument in the AST.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class MethodArgument extends Statement {
 
@@ -42,8 +45,8 @@ public class MethodArgument extends Statement {
 
 	/**
 	 * Accepts a visitor to process this method argument.
+	 *
 	 * @param visitor the AST visitor
-	 * @return the result of the visitor's processing
 	 */
 	@Override
 	public <R> void accept(ASTVisitor<R> visitor) {

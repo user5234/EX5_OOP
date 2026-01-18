@@ -6,6 +6,9 @@ import java.util.List;
 
 /**
  * A block of statements.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class Block extends Statement {
 

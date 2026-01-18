@@ -2,6 +2,9 @@ package ex5.semantic;
 
 /**
  * Represents a semantic exception that occurs during semantic analysis.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class SemanticException extends RuntimeException {
 	/**

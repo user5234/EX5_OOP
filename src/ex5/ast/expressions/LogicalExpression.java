@@ -6,6 +6,9 @@ import ex5.lexer.TokenType;
 /**
  * Logical expression node in the AST.
  * Represents logical operations like AND, OR.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class LogicalExpression extends Expression {
 	private final Expression left;

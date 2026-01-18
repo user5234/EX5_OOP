@@ -14,11 +14,15 @@ import java.util.List;
 
 /**
  * Performs semantic analysis on the AST.
+ *
+ * @author galart27
+ * @author noam_wein
  */
 public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 	private final MethodTable methodTable;
 	private final List<MethodDeclaration> deferredMethods;
+	private final Scope globalScope;
 	private Scope currentScope;
 
 	/**
@@ -27,7 +31,8 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	public SemanticAnalyzer() {
 		methodTable = new MethodTable();
 		deferredMethods = new ArrayList<>();
-		currentScope = new Scope(null);
+		globalScope = new Scope(null);
+		currentScope = globalScope;
 	}
 
 	/**
@@ -78,7 +83,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	@Override
 	public void visitIfStatement(IfStatement is) {
 		var conditionType = is.getCondition().accept(this);
-		if (!isConditionOperandType(conditionType)) {
+		if (isConditionNotOperandType(conditionType)) {
 			throw new SemanticException("If condition must be boolean");
 		}
 
@@ -152,7 +157,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 		var exprType = va.getExpression().accept(this);
 
-		if (!isAssignable(symbol.getType(), exprType)) {
+		if (isNotAssignable(symbol.getType(), exprType)) {
 			throw new SemanticException("Type mismatch: cannot assign " +
 			                            exprType + " to " + symbol.getType());
 		}
@@ -171,7 +176,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 
 		if (isInitialized) {
 			var initType = vs.getInitializer().accept(this);
-			if (!isAssignable(vs.getType(), initType)) {
+			if (isNotAssignable(vs.getType(), initType)) {
 				throw new SemanticException("Type mismatch: cannot assign " +
 				                            initType + " to " + vs.getType());
 			}
@@ -189,7 +194,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	 */
 	public void visitWhileStatement(WhileStatement ws) {
 		var conditionType = ws.getCondition().accept(this);
-		if (!isConditionOperandType(conditionType)) {
+		if (isConditionNotOperandType(conditionType)) {
 			throw new SemanticException("While condition must be boolean");
 		}
 
@@ -246,7 +251,7 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 		for (int i = 0; i < mc.getArguments().size(); i++) {
 			TokenType argType = mc.getArguments().get(i).accept(this);
 			TokenType paramType = method.getParameters().get(i).getType();
-			if (!isAssignable(paramType, argType)) {
+			if (isNotAssignable(paramType, argType)) {
 				throw new SemanticException("Argument " + (i + 1) +
 				                            " of method " + mc.getIdentifier() +
 				                            " expects " + paramType + ", got " + argType);
@@ -264,21 +269,11 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 		TokenType left = le.getLeft().accept(this);
 		TokenType right = le.getRight().accept(this);
 
-		if (!isConditionOperandType(left) || !isConditionOperandType(right)) {
+		if (isConditionNotOperandType(left) || isConditionNotOperandType(right)) {
 			throw new SemanticException("Operands of &&/|| must be boolean/int/double");
 		}
 
 		return TokenType.BOOLEAN;
-	}
-
-	/**
-	 * Visits a method call statement.
-	 *
-	 * @param mcs The method call statement to visit.
-	 */
-	@Override
-	public void visitMethodCallStatement(MethodCallStatement mcs) {
-		mcs.getCall().accept(this);
 	}
 
 	// ───────── HELPERS ─────────
@@ -306,8 +301,8 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	 * @param t The TokenType to check.
 	 * @return True if valid for conditions, false otherwise.
 	 */
-	private boolean isConditionOperandType(TokenType t) {
-		return t == TokenType.BOOLEAN || t == TokenType.INT || t == TokenType.DOUBLE;
+	private boolean isConditionNotOperandType(TokenType t) {
+		return t != TokenType.BOOLEAN && t != TokenType.INT && t != TokenType.DOUBLE;
 	}
 
 	/**
@@ -317,14 +312,14 @@ public class SemanticAnalyzer implements ASTVisitor<TokenType> {
 	 * @param source The source TokenType.
 	 * @return True if assignable, false otherwise.
 	 */
-	private boolean isAssignable(TokenType target, TokenType source) {
-		if (target == source) return true;
+	private boolean isNotAssignable(TokenType target, TokenType source) {
+		if (target == source) return false;
 
 		// numeric promotion
-		if (target == TokenType.DOUBLE && source == TokenType.INT) return true;
+		if (target == TokenType.DOUBLE && source == TokenType.INT) return false;
 
 		// boolean can accept int/double
-		return target == TokenType.BOOLEAN &&
-		       (source == TokenType.INT || source == TokenType.DOUBLE);
+		return target != TokenType.BOOLEAN ||
+		       (source != TokenType.INT && source != TokenType.DOUBLE);
 	}
 }
